@@ -43,10 +43,24 @@ Disc A A-grpd .idr _ = ∙-idl _
 Disc A A-grpd .idl _ = ∙-idr _
 Disc A A-grpd .assoc _ _ _ = sym (∙-assoc _ _ _)
 
-Disc' : Set ℓ → Precategory ℓ ℓ
-Disc' A = Disc ∣ A ∣ h where abstract
-  h : is-groupoid ∣ A ∣
-  h = is-hlevel-suc 2 (A .is-tr)
+-- Disc' : Set ℓ → Precategory ℓ ℓ
+-- Disc' A = Disc ∣ A ∣ h where abstract
+--   h : is-groupoid ∣ A ∣
+--   h = is-hlevel-suc 2 (A .is-tr)
+
+Disc! : {T : Type ℓ} ⦃ _ : Underlying T ⦄ (A : T) {@(tactic hlevel-tactic-worker) A-grpd : is-groupoid ⌞ A ⌟} → Precategory _ _
+Disc! A {A-grpd} = Disc ⌞ A ⌟ h where abstract
+  h : is-groupoid ⌞ A ⌟
+  h = A-grpd
+
+-- open import Data.Bool
+
+-- 𝟚 : ∀ ℓ → Set ℓ
+-- 𝟚 ℓ = el! (Lift ℓ Bool)
+
+-- test : ∀ {ℓ} → Disc! (𝟚 ℓ) {A-grpd = {!   !}} ≡ Disc! (𝟚 ℓ) {A-grpd = {!   !}}
+-- test = refl
+
 ```
 
 We can lift any function between the underlying types to a functor
@@ -55,9 +69,10 @@ automatically respects equality in a functorial way.
 
 ```agda
 lift-disc
-  : ∀ {A : Set ℓ} {B : Set ℓ'}
-  → (∣ A ∣ → ∣ B ∣)
-  → Functor (Disc' A) (Disc' B)
+  : {T₁ : Type ℓ} ⦃ _ : Underlying T₁ ⦄ {A : T₁} {@(tactic hlevel-tactic-worker) A-grpd : is-groupoid ⌞ A ⌟ } 
+    {T₂ : Type ℓ'} ⦃ _ : Underlying T₂ ⦄ {B : T₂} {@(tactic hlevel-tactic-worker) B-grpd : is-groupoid ⌞ B ⌟}
+  → (⌞ A ⌟ → ⌞ B ⌟)
+  → Functor (Disc! A {A-grpd}) (Disc! B {B-grpd})
 lift-disc f .F₀ = f
 lift-disc f .F₁ = ap f
 lift-disc f .F-id = refl
@@ -89,16 +104,16 @@ adjoint]] to the `Ob`{.Agda} functor.
 
 ```agda
 Disc-diagram
-  : ∀ {X : Set ℓ} ⦃ _ : Discrete ∣ X ∣ ⦄
-  → (∣ X ∣ → Ob C)
-  → Functor (Disc' X) C
+  : {T : Type ℓ} ⦃ _ : Underlying T ⦄ {X : T} {@(tactic hlevel-tactic-worker) X-grpd : is-groupoid ⌞ X ⌟} ⦃ _ : Discrete ⌞ X ⌟ ⦄
+  → (⌞ X ⌟ → Ob C)
+  → Functor (Disc! X {X-grpd}) C
 Disc-diagram {C = C} {X = X} ⦃ d ⦄ f = F where
   module C = Precategory C
 
-  P : ∣ X ∣ → ∣ X ∣ → Type _
+  P : ⌞ X ⌟ → ⌞ X ⌟ → Type _
   P x y = C.Hom (f x) (f y)
 
-  go : ∀ {x y : ∣ X ∣} → x ≡ y → Dec (x ≡ᵢ y) → P x y
+  go : ∀ {x y : ⌞ X ⌟} → x ≡ y → Dec (x ≡ᵢ y) → P x y
   go {x} {.x} p (yes reflᵢ) = C.id
   go {x} {y}  p (no ¬p)     = absurd (¬p (Id≃path.from p))
 ```
@@ -130,16 +145,16 @@ computations with equalities and a whole waterfall of absurd cases:
 
 <!--
 ```
-Disc-adjunct
-  : ∀ {iss : is-groupoid X}
-  → (X → Ob C)
-  → Functor (Disc X iss) C
+Disc-adjunct : 
+  {T : Type ℓ} ⦃ _ : Underlying T ⦄ {X : T} {@(tactic hlevel-tactic-worker) X-grpd : is-groupoid ⌞ X ⌟}
+  → (⌞ X ⌟ → C .Ob)
+  → Functor (Disc! X {X-grpd}) C
 Disc-adjunct {C = C} F .F₀ = F
 Disc-adjunct {C = C} F .F₁ p = subst (C .Hom (F _) ⊙ F) p (C .id)
 Disc-adjunct {C = C} F .F-id = transport-refl _
-Disc-adjunct {C = C} {iss = iss} F .F-∘ {x} {y} {z} f g = path where
+Disc-adjunct {C = C} {T = T} {X-grpd = X-grpd} F .F-∘ {x} {y} {z} f g = path where
   import Cat.Reasoning C as C
-  go = Disc-adjunct {C = C} {iss} F .F₁
+  go = Disc-adjunct {C = C} {T = T} {X-grpd = X-grpd} F .F₁
   abstract
     path : go (g ∙ f) ≡ C ._∘_ (go f) (go g)
     path =
@@ -154,8 +169,8 @@ Disc-adjunct {C = C} {iss = iss} F .F-∘ {x} {y} {z} f g = path where
 <!--
 ```agda
 Disc-natural
-  : ∀ {X : Set ℓ}
-  → {F G : Functor (Disc' X) C}
+  : {T : Type ℓ} ⦃ _ : Underlying T ⦄ {X : T} {@(tactic hlevel-tactic-worker) X-grpd : is-groupoid ⌞ X ⌟}
+  → {F G : Functor (Disc! X {X-grpd}) C}
   → (∀ x → C .Hom (F .F₀ x) (G .F₀ x))
   → F => G
 Disc-natural fam .η = fam

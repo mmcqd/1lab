@@ -70,14 +70,14 @@ We begin by defining the object set functor.
 Γ .F-∘ _ _ = refl
 ```
 
-We must then prove that the assignment `Disc'`{.Agda} extends to a
+We must then prove that the assignment `Disc!`{.Agda} extends to a
 functor from `Sets`{.Agda}, and prove that it's left adjoint to the
 functor `Γ`{.Agda} we defined above. Then we define the adjunction
 `Disc⊣Γ`{.Agda}.
 
 ```agda
 Disc : Functor (Sets ℓ) (Strict-cats ℓ ℓ)
-Disc .F₀ S = Disc' S , S .is-tr
+Disc .F₀ S = Disc! S , S .is-tr
 Disc .F₁ = lift-disc
 Disc .F-id = Functor-path (λ x → refl) λ f → refl
 Disc .F-∘ _ _ = Functor-path (λ x → refl) λ f → refl
@@ -111,7 +111,7 @@ $X$, the identity map suffices:
 
 ```agda
   adj : Disc {ℓ} ⊣ Γ
-  adj .unit   = NT (λ _ x → x) λ x y f i o → f o
+  adj .unit   = NT (λ _ z → z) λ x y f i o → f o
 ```
 
 The adjunction counit is slightly more complicated, as we have to give a
@@ -121,9 +121,9 @@ morphisms in discrete categories are paths, for a map $x \equiv y$ (in
 identity map suffices.
 
 ```agda
-  adj .counit = NT (λ x → F x) nat where
+  adj {ℓ = ℓ} .counit = NT F nat where
     F : (x : Precategory.Ob (Strict-cats ℓ ℓ))
-      → Functor (Disc' (el _ (x .snd))) _
+      → Functor (Disc! (el _ (x .snd))) _
     F X .F₀ x = x
     F X .F₁ p = subst (X .fst .Hom _) p (X .fst .id) {- 1 -}
     F X .F-id = transport-refl _
@@ -391,3 +391,4 @@ Points→Pieces .is-natural x y f i o = inc (F₀ f o)
 pieces-have-points : ∀ {x} y → ∥ fibre (Points→Pieces {ℓ} .η x) y ∥
 pieces-have-points = Coeq-elim-prop (λ _ → squash) λ x → inc (x , refl)
 ```
+ 

@@ -789,3 +789,4 @@ private
 
     _ : ∀ {ℓ} {A : Type ℓ} → is-groupoid (is-hlevel A 5)
     _ = hlevel!
+ 
