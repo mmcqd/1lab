@@ -51,6 +51,7 @@ private
     A B : Type ℓ₁
 ```
 
+::: {.definition #fibre}
 A _homotopy fibre_, _fibre_ or _preimage_ of a function `f` at a point
 `y : B` is the collection of all elements of `A` that `f` maps to `y`.
 Since many choices of name are possible, we settle on the one that is
@@ -60,6 +61,7 @@ shortest and most aesthetic: `fibre`{.Agda}.
 fibre : (A → B) → B → Type _
 fibre f y = Σ _ λ x → f x ≡ y
 ```
+:::
 
 A function `f` is an equivalence if every one of its fibres is
 [[contractible]] - that is, for any element `y` in the range, there is
@@ -603,6 +605,13 @@ is-contr→≃⊤ c = is-contr→≃ c ⊤-is-contr
 
 is-empty→≃⊥ : ∀ {ℓ} {A : Type ℓ} → ¬ A → A ≃ ⊥
 is-empty→≃⊥ ¬a = _ , ¬-is-equiv ¬a
+```
+
+Any involution is an equivalence:
+
+```agda
+is-involutive→is-equiv : ∀ {ℓ} {A : Type ℓ} {f : A → A} → (∀ a → f (f a) ≡ a) → is-equiv f
+is-involutive→is-equiv inv = is-iso→is-equiv (iso _ inv inv)
 ```
 
 # Equivalence reasoning

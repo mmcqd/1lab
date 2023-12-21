@@ -584,9 +584,4 @@ is monotone, and thus Scott-continuous.
     dcpo+scott→monotone D.has-dcpo f pres
   to-scott-directed f pres .Subcat-hom.witness = pres
 ```
-
-# DCPOs is cartesian closed
-```agda
-
-```                      
-                          
+ 
