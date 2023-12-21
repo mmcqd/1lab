@@ -10,12 +10,9 @@ open import 1Lab.Equiv
 open import 1Lab.Path
 open import 1Lab.Type
 
-<<<<<<< HEAD
 
 open import Data.Id.Base
-=======
 open import Data.List.Base
->>>>>>> main
 open import Data.Bool
 
 open import Meta.Foldable
