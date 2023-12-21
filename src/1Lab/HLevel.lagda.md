@@ -503,5 +503,15 @@ is-set→cast-pathp
   → PathP (λ i → P (q i)) px py
 is-set→cast-pathp {p = p} {q = q} P {px} {py} set  r =
   coe0→1 (λ i → PathP (λ j → P (set _ _ p q i j)) px py) r
+
+
+-- Taken from: https://github.com/agda/cubical/blob/a35231df18dd277c18c6cb9a200fb1cc4cb31f56/Cubical/Foundations/Transport.agda#L120C1-L124C109
+subst-filler-set : ∀ {ℓ ℓ'} {A : Type ℓ} {P : A → Type ℓ'}
+                → is-set A
+                → {a : A}
+                → (p : a ≡ a)
+                → ∀ x → x ≡ subst P p x 
+subst-filler-set {P = P} is-set-A p x = subst (λ q → x ≡ subst P q x) (is-set-A _ _ refl p) (sym (transport-refl x))
+
 ```
 -->

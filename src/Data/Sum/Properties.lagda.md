@@ -200,3 +200,16 @@ instance
   Discrete-⊎ {x = inr x} {inl y} = no inr≠inl
   Discrete-⊎ {x = inr x} {inr y} = Dec-map (ap inr) inr-inj (x ≡? y)
 ```
+
+<!--
+```agda
+x≠inl→x≡inr : (x : A ⊎ B) → ¬ Σ[ y ∈ A ] (x ≡ inl y) → Σ[ y ∈ B ] (x ≡ inr y)
+x≠inl→x≡inr (inl y) p = absurd (p (y , refl))
+x≠inl→x≡inr (inr y) p = y , refl
+
+
+x≠inr→x≡inl : (x : A ⊎ B) → ¬ Σ[ y ∈ B ] (x ≡ inr y) → Σ[ y ∈ A ] (x ≡ inl y)
+x≠inr→x≡inl (inl y) p = y , refl
+x≠inr→x≡inl (inr y) p = absurd (p (y , refl))
+```
+-->

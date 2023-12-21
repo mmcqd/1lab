@@ -315,6 +315,11 @@ instance
 debug! : ∀ {ℓ} {A : Type ℓ} → Term → TC A
 debug! tm = typeError ("[DEBUG]: " ∷ termErr tm ∷ [])
 
+debug-repr! : ∀ {ℓ} {A : Type ℓ} → Term → TC A
+debug-repr! tm = do
+  tm ← quoteTC tm
+  debug! tm
+
 quote-repr-macro : ∀ {ℓ} {A : Type ℓ} → A → Term →  TC ⊤
 quote-repr-macro a hole = do
   tm ← quoteTC a
@@ -333,3 +338,4 @@ unify-loudly a b = do
   debugPrint "tactic" 50 $ termErr a ∷ " =? " ∷ termErr b ∷ []
   unify a b
 ```
+ 

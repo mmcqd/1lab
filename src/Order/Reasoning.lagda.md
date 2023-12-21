@@ -48,4 +48,16 @@ f ≤∎ = ≤-refl
 
 infixr 2 _=⟨_⟩_ _=˘⟨_⟩_ _≤⟨_⟩_
 infix  3 _≤∎
+
+-- Whiskering on the left of _≤_
+_▶_ : b ≡ a → b ≤ c → a ≤ c
+p ▶ l = subst (_≤ _) p l
+
+-- Whiskering on the right of _≤_
+_◀_ : b ≤ c → c ≡ d → b ≤ d
+l ◀ p = subst (_ ≤_) p l
+
+
+_▶_◀_ : b ≡ a → b ≤ c → c ≡ d → a ≤ d
+p ▶ l ◀ q = (p ▶ l) ◀ q
 ```

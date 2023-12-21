@@ -1,11 +1,22 @@
 <!--
 ```agda
+-- {-# OPTIONS -vtactic.absurd-goal:10 --show-implicit #-}
+
 open import Cat.Displayed.Univalence.Thin using (extensionality-hom)
 open import Cat.Functor.Subcategory
 open import Cat.Displayed.Total
 open import Cat.Prelude
 
 open import Data.Bool
+
+open import Data.Sum
+open import Order.Instances.Coproduct
+open import Order.Instances.Disjoint
+
+open import 1Lab.Reflection.Absurd-goal
+
+open import 1Lab.Equiv.Embedding
+open import Data.Dec
 
 open import Order.Univalent
 open import Order.Base
@@ -41,14 +52,24 @@ module _ {o ℓ} (P : Poset o ℓ) where
   open Order.Reasoning P
   open Order.Diagram.Lub P
 
+  has-ub : ∀ {Ix : Type o} → (Ix → Ob) → Ix → Ix → Type _
+  has-ub {Ix} f i j = Σ[ k ∈ Ix ] (f i ≤ f k × f j ≤ f k)
+
   is-semidirected-family : ∀ {Ix : Type o} → (Ix → Ob) → Type _
-  is-semidirected-family {Ix = Ix} f = ∀ i j → ∃[ k ∈ Ix ] (f i ≤ f k × f j ≤ f k)
+  is-semidirected-family {Ix = Ix} f = ∀ i j → ∥ has-ub f i j ∥
+
+  is-semidirected-family-is-prop : ∀ {Ix} {f : Ix → Ob} → is-prop (is-semidirected-family f)
+  is-semidirected-family-is-prop = hlevel!
 
   record is-directed-family {Ix : Type o} (f : Ix → Ob) : Type (o ⊔ ℓ) where
     no-eta-equality
     field
       elt : ∥ Ix ∥
       semidirected : is-semidirected-family f
+    
+  is-directed-family-is-prop : ∀ {Ix} {f : Ix → Ob} → is-prop (is-directed-family f)
+  is-directed-family-is-prop = Iso→is-hlevel 1 eqv hlevel!
+    where unquoteDecl eqv = declare-record-iso eqv (quote is-directed-family)
 ```
 
 Note that any family whose indexing type is a proposition is
@@ -192,6 +213,173 @@ P$ is a directed family, then $fs : I \to Q$ is still a directed family.
       (dir .semidirected i j)
 ```
 
+If $s : I \to P \uplus Q$ is a directed family, then it is merely the case that the domain of $s$ is entirely
+on one side of the coproduct. Intuitively, if $s$ had both an `inl`{.Agda} `x` and an `inr`{.Agda} `y`
+in its domain, directness would mean there's some `s k` such that `inl`{.Agda} `x ≤ s k` and `inr`{.Agda} `y ≤ s k`. Say
+`s k` is `inl`{.Agda} `z`, but then we have `inr`{.Agda} `y ≤` `inl`{.Agda} `z`, which is `⊥`. The other
+case is symmetric.
+
+Furthermore, we can show that the resulting restricted family is still directed, by restricting the relations
+in the semidirectedness proof in the appropriate way.
+
+<!--
+```agda
+module _ {P Q : Poset o ℓ} where
+  private
+    module P where
+      open Order.Diagram.Lub P public
+      open Order.Reasoning P public 
+
+    module Q where
+      open Order.Diagram.Lub Q public
+      open Order.Reasoning Q public
+
+  open is-directed-family
+```
+-->
+
+```agda
+
+  is-one-sided-directed : {Ix : Type o} (s : Ix → P.Ob ⊎ Q.Ob) → Type _
+  is-one-sided-directed {Ix} s = (Σ[ f ∈ (Ix → P.Ob) ] (is-directed-family P f × (s ≡ inl ⊙ f))) ⊎ (Σ[ f ∈ (Ix → Q.Ob) ] (is-directed-family Q f × (s ≡ inr ⊙ f)))
+
+  ⊎-directed→one-sided-directed
+    : ∀ {Ix : Type o} 
+        {s : Ix → P.Ob ⊎ Q.Ob}
+      → is-directed-family (P ⊎ᵖ Q) s
+      → ∥ is-one-sided-directed s ∥
+  ⊎-directed→one-sided-directed {Ix} {s} dir = ∥-∥-rec! (inc ⊙ one-sided) (dir .elt)
+    where module _ (i : Ix) where
+      open Order.Reasoning (P ⊎ᵖ Q)
+      
+      refute-r : ∀ {x y} → s i ≡ inl x → ∀ {j} → ¬ (s j ≡ inr y)
+      refute-r p {j} q = ∥-∥-rec! refute (dir .semidirected i j) where
+        refute : _
+        refute (k , si≤sk , sj≤sk) with s k | recall s k
+        ... | inl x | ⟪ eq ⟫ = (q ▶ sj≤sk) .Lift.lower
+        ... | inr x | ⟪ eq ⟫ = (p ▶ si≤sk) .Lift.lower
+
+      refute-l : ∀ {x y} → s i ≡ inr x → ∀ {j} → ¬ (s j ≡ inl y)
+      refute-l p {j} q = ∥-∥-rec! refute (dir .semidirected i j) where
+        refute : _
+        refute (k , si≤sk , sj≤sk) with s k | recall s k
+        ... | inl x | ⟪ eq ⟫ = (p ▶ si≤sk) .Lift.lower
+        ... | inr x | ⟪ eq ⟫ = (q ▶ sj≤sk) .Lift.lower
+
+      one-sided : is-one-sided-directed s
+      one-sided with s i | recall s i
+      ... | inl x | ⟪ eq ⟫ = inl (f , f-dir , ext f-inl)
+        where
+          f : Ix → P.Ob
+          f j with s j | recall s j
+          ... | inl x | ⟪ eq' ⟫ = x
+          ... | inr x | ⟪ eq' ⟫ = absurd (refute-r eq eq')
+
+          f-inl : (j : Ix) → s j ≡ inl (f j)
+          f-inl j with s j | recall s j
+          ... | inl x | _ = refl
+          ... | inr x | ⟪ eq' ⟫ = absurd (refute-r eq eq')
+
+          f-dir : is-directed-family P f
+          f-dir .elt = inc i
+          f-dir .semidirected i j = ∥-∥-map (λ (k , si≤sk , sj≤sk) → k , (f-inl i ▶ si≤sk ◀ f-inl k) , (f-inl j ▶ sj≤sk ◀ f-inl k)) (dir .semidirected i j)
+
+      ... | inr x | ⟪ eq ⟫ = inr (g , g-dir , ext g-inr)
+        where
+
+          g : Ix → Q.Ob
+          g j with s j | recall s j
+          ... | inl x | ⟪ eq' ⟫ = absurd (refute-l eq eq')
+          ... | inr x | ⟪ eq' ⟫ = x
+
+          g-inr : (j : Ix) → s j ≡ inr (g j)
+          g-inr j with s j | recall s j
+          ... | inl x | ⟪ eq' ⟫ = absurd (refute-l eq eq')
+          ... | inr x | _ = refl
+
+
+          g-dir : is-directed-family Q g
+          g-dir .elt = inc i
+          g-dir .semidirected i j = ∥-∥-map (λ (k , si≤sk , sj≤sk) → k , (g-inr i ▶ si≤sk ◀ g-inr k) , (g-inr j ▶ sj≤sk ◀ g-inr k)) (dir .semidirected i j)
+```
+
+
+<!--
+```agda
+module _ (I : Set o) ⦃ d : Discrete ⌞ I ⌟ ⦄ (F : ⌞ I ⌟ → Poset o ℓ) where
+  open is-directed-family
+  private
+    
+    module F {i : ⌞ I ⌟} where
+      open Poset (F i) public
+      open Order.Diagram.Lub (F i) public
+      open Lub public
+      open is-lub public
+      
+    module ΣF where
+      open Order.Reasoning (Disjoint I F) public
+      open Order.Diagram.Lub (Disjoint I F) public
+      open Lub public
+      open is-lub public
+
+    ΣF = Disjoint I F
+
+
+  restricted-fam-directed : {J : Type o} → (s : J → ΣF.Ob) → Type _
+  restricted-fam-directed {J} s = Σ[ i ∈ ⌞ I ⌟ ] Σ[ f ∈ (J → ⌞ F i ⌟) ] ((s ≡ (i ,_) ⊙ f) × is-directed-family (F i) f)
+
+  discrete-Σ-directed→restriced-fam-directed
+    : {A : Type o} 
+      {s : A → ΣF.Ob}
+      → is-directed-family ΣF s
+      → ∥ restricted-fam-directed s ∥
+  discrete-Σ-directed→restriced-fam-directed {A} {s} dir = {!   !} -- ∥-∥-rec! (λ x → inc (rfd x)) (dir .elt)
+    where module _ (a : A) where
+
+      unite : ∀ {i j x y} (u v : A) → s u ≡ᵢ (i , x) → s v ≡ᵢ (j , y) → ∥ i ≡ᵢ j ∥
+      unite u v p q = ∥-∥-map (go u v p q ) (dir .semidirected u v) where
+        go : ∀ {i j x y} (u v : A) → s u ≡ᵢ (i , x) → s v ≡ᵢ (j , y) → has-ub ΣF s u v → i ≡ᵢ j
+        go u v with s u | s v
+        ... | _ | _ = λ where reflᵢ reflᵢ (_ , (reflᵢ , _) , (reflᵢ , _)) → reflᵢ
+
+      -- lemma : A ↪ ⌞ I ⌟
+      -- lemma .fst = fst ⊙ s
+      -- lemma .snd i (a , p) (b , q) = Σ-pathp {!   !} {!   !} -- (is-prop→pathp (λ i → I .is-tr _ _) p q)
+      --   where
+      --     w : s a .fst ≡ s b .fst
+      --     w = p ∙ sym q
+
+      lemma : ⌞ I ⌟ ↪ A
+      lemma .fst = {!   !}
+      lemma .snd = {!   !}
+      
+      -- rfd : restricted-fam-directed s
+      -- rfd with s a  | recallᵢ s a
+      -- ... | (i , x) | ⟪ eq ⟫ᵢ = i , f , {!   !} , {!   !}
+      --   where
+      --     open ΣF
+
+      --     f : A → ⌞ F i ⌟
+      --     f b with s b  | recallᵢ s b
+      --     ... | (j , y) | ⟪ eq' ⟫ᵢ with i ≡ᵢ? j
+      --     ... | yes reflᵢ = y
+      --     ... | no ¬p = absurd (∥-∥-rec! (λ where reflᵢ → ¬p reflᵢ) (unite a b eq eq')) 
+
+      --     f-injᵢ : (b : A) → s b ≡ (i , f b)
+      --     f-injᵢ b with i ≡ᵢ? s b .fst
+      --     ... | yes reflᵢ = refl
+      --     ... | no ¬p = absurd (∥-∥-rec! (λ where reflᵢ → ¬p reflᵢ) (unite a b eq reflᵢ))
+
+      --     f-dir : is-directed-family (F i) f
+      --     f-dir .elt = inc a
+      --     f-dir .semidirected = {!   !} where
+      --       semi-dir : (u v : A) (k : A) → (s u ≤ s k) → (s v ≤ s k) → has-ub (F i) f u v
+      --       semi-dir u v k = {!   !}
+            -- subst (λ s → (s u ≤ s k) → (s v ≤ s k) → has-ub (F i) f u v) (ext f-injᵢ) {!   !}
+```
+-->
+
+
 <!--
 ```agda
 module _ where
@@ -316,7 +504,7 @@ module Scott {o ℓ} {D E : DCPO o ℓ} (f : DCPOs.Hom D E) where
     directed
       : ∀ {Ix} {s : Ix → D.Ob} → is-directed-family D.poset s
       → is-directed-family E.poset (apply f ⊙ s)
-    directed dir = monotone∘directed (Subcat-hom.hom f) dir
+    directed dir = monotone∘directed mono dir
 
     pres-⋃
       : ∀ {Ix} (s : Ix → D.Ob) → (dir : is-directed-family D.poset s)
@@ -373,6 +561,13 @@ chosen _assignment_ of least upper bounds, then it is Scott-continuous.
         f (D.⋃ s dir)    E.=⟨ E.lub-unique (pres-⋃ s dir) (E.⋃.has-lub (f ⊙ s) (monotone∘directed fᵐ dir)) ⟩
         E.⋃ (f ⊙ s) _    E.≤⟨ E.⋃.least _ _ y le ⟩
         y                E.≤∎
+
+  to-scottᵐ : 
+      (F : Posets.Hom D.poset E.poset) →
+      (∀ {Ix} (s : Ix → D.Ob) → (dir : is-directed-family D.poset s) → E.is-lub (apply F ⊙ s) (F # (D.⋃ s dir)))
+      → DCPOs.Hom D E
+  to-scottᵐ F = to-scott (F .hom) (F .pres-≤)
+
 ```
 
 Furthermore, if $f$ preserves arbitrary least upper bounds, then it
@@ -389,4 +584,9 @@ is monotone, and thus Scott-continuous.
     dcpo+scott→monotone D.has-dcpo f pres
   to-scott-directed f pres .Subcat-hom.witness = pres
 ```
- 
+
+# DCPOs is cartesian closed
+```agda
+
+```                      
+                          

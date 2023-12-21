@@ -49,6 +49,10 @@ given two functions `A → C` and `B → C`, we can construct a function
 [_,_] : (A → C) → (B → C) → (A ⊎ B) → C
 [ f , g ] (inl x) = f x
 [ f , g ] (inr x) = g x
+
+⊎-elim : (P : A ⊎ B → Type c) → (∀ x → P (inl x)) → (∀ y → P (inr y)) → ∀ x → P x
+⊎-elim P f g (inl x) = f x
+⊎-elim P f g (inr x) = g x
 ```
 
 Furthermore, this function is "universal" in the following sense: if we

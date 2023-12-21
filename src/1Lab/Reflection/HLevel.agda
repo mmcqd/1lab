@@ -10,6 +10,8 @@ open import 1Lab.Equiv
 open import 1Lab.Path
 open import 1Lab.Type
 
+
+open import Data.Id.Base
 open import Data.Bool
 open import Data.List
 
@@ -735,6 +737,12 @@ instance
 
   decomp-path : ∀ {ℓ} {A : Type ℓ} {a b : A} → hlevel-decomposition (a ≡ b)
   decomp-path = decomp (quote Path-is-hlevel) (`level ∷ `search ∷ [])
+
+  decomp-id : ∀ {ℓ} {A : Type ℓ} {a b : A} → hlevel-decomposition (a ≡ᵢ b)
+  decomp-id = decomp (quote Id-is-hlevel) (`level ∷ `search ∷ [])
+
+  decomp-id' : ∀ {ℓ} {A : Type ℓ} {a b : A} → hlevel-decomposition (a ≡ᵢ b)
+  decomp-id' = decomp (quote Id-is-hlevel') (`level ∷ `search ∷ [])
 
   decomp-univalence : ∀ {ℓ} {A B : Type ℓ} → hlevel-decomposition (A ≡ B)
   decomp-univalence = decomp (quote ≡-is-hlevel) (`level ∷ `search ∷ `search ∷ [] )

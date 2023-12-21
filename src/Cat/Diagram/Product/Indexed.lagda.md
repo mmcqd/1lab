@@ -233,3 +233,42 @@ lying over our isomorphism.
   cat .to-path = path
   cat .to-path-over = path-over
 ```
+
+<!--
+```agda
+
+open import Cat.Diagram.Product
+open import Data.Bool
+
+
+
+has-indexed-products→has-products : has-indexed-products ℓ → has-products C
+has-indexed-products→has-products idx-prds a b = prod
+  where
+    open Product
+    open is-product
+    open Indexed-product
+    open is-indexed-product
+
+
+    ^Bool-elim : ∀ {ℓ'} (A : Lift ℓ Bool → Type ℓ') → A (lift true) → A (lift false) → ∀ x → A x
+    ^Bool-elim A t f (lift true)  = t
+    ^Bool-elim A t f (lift false) = f
+
+    ^if_then_else_ : ∀ {ℓ'} {A : Type ℓ'} → Lift ℓ Bool → A → A → A
+    ^if_then_else_ x t f = ^Bool-elim _ t f x
+
+
+    bin-prod : Indexed-product _
+    bin-prod = idx-prds (^if_then a else b)
+
+    prod : Product C a b
+    prod .apex = bin-prod .ΠF
+    prod .π₁ = bin-prod .π $ lift true
+    prod .π₂ = bin-prod .π $ lift false
+    prod .has-is-product .⟨_,_⟩ f g = bin-prod .has-is-ip .tuple (^Bool-elim _ f g)
+    prod .has-is-product .π₁∘factor = bin-prod .has-is-ip .commute
+    prod .has-is-product .π₂∘factor = bin-prod .has-is-ip .commute
+    prod .has-is-product .unique {p1 = p1} {p2 = p2} p α β = bin-prod .has-is-ip .unique (^Bool-elim _ p1 p2) (^Bool-elim _ α β)
+``` 
+--> 

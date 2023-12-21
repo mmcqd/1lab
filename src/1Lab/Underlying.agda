@@ -1,9 +1,11 @@
 open import 1Lab.HLevel.Retracts
 open import 1Lab.HLevel.Universe
+open import 1Lab.Equiv.Embedding
 open import 1Lab.Resizing
 open import 1Lab.HLevel
 open import 1Lab.Path
 open import 1Lab.Type
+
 
 module 1Lab.Underlying where
 

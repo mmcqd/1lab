@@ -80,6 +80,9 @@ record Lift {a} ℓ (A : Type a) : Type (a ⊔ ℓ) where
 instance
   Lift-instance : ∀ {ℓ ℓ'} {A : Type ℓ} → ⦃ A ⦄ → Lift ℓ' A
   Lift-instance ⦃ x ⦄ = lift x
+
+absurd* : ∀ {ℓ ℓ'} {A : Type ℓ} → .(Lift ℓ' ⊥) → A
+absurd* ()
 ```
 -->
 

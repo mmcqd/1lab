@@ -472,6 +472,13 @@ principle of _indiscernibility of identicals_:
 subst : ∀ {ℓ₁ ℓ₂} {A : Type ℓ₁} (P : A → Type ℓ₂) {x y : A}
       → x ≡ y → P x → P y
 subst P p x = transp (λ i → P (p i)) i0 x
+
+
+subst-filler : ∀ {ℓ₁ ℓ₂} {A : Type ℓ₁} {x y : A}
+                → (P : A → Type ℓ₂) 
+                → (p : x ≡ y) (a : P x)
+                → PathP (λ i → P (p i)) a (subst P p a)
+subst-filler P p a = transport-filler (λ i → P (p i)) a
 ```
 
 ### Computation
