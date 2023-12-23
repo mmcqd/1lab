@@ -179,5 +179,13 @@ recallᵢ
   → Recallᵢ f x (f x)
 recallᵢ f x = ⟪ reflᵢ ⟫ᵢ
 
+
+symᵢ : ∀ {a} {A : Type a} {x y : A} → x ≡ᵢ y → y ≡ᵢ x
+symᵢ reflᵢ = reflᵢ
+
+_∙ᵢ_ : ∀ {a} {A : Type a} {x y z : A} → x ≡ᵢ y → y ≡ᵢ z → x ≡ᵢ z
+reflᵢ ∙ᵢ q = q
+
+
 ```
 -->

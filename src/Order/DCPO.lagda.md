@@ -7,15 +7,15 @@ open import Cat.Functor.Subcategory
 open import Cat.Displayed.Total
 open import Cat.Prelude
 
+open import 1Lab.Reflection.Marker
+
 open import Data.Bool
 
 open import Data.Sum
 open import Order.Instances.Coproduct
 open import Order.Instances.Disjoint
 
-open import 1Lab.Reflection.Absurd-goal
-
-open import 1Lab.Equiv.Embedding
+open import 1Lab.Function.Embedding
 open import Data.Dec
 
 open import Order.Univalent
@@ -48,20 +48,20 @@ some $k$ such $f i \le f k$ and $f j \le f k$. A semidirected family
 $f : I \to P$ is a **directed family** when $I$ is merely inhabited.
 
 ```agda
-module _ {o ℓ} (P : Poset o ℓ) where
+module _ {κ o ℓ} (P : Poset o ℓ) where
   open Order.Reasoning P
   open Order.Diagram.Lub P
 
-  has-ub : ∀ {Ix : Type o} → (Ix → Ob) → Ix → Ix → Type _
-  has-ub {Ix} f i j = Σ[ k ∈ Ix ] (f i ≤ f k × f j ≤ f k)
+  is-ub : Ob → Ob → Ob → Type _
+  is-ub x y z = x ≤ z × y ≤ z
 
-  is-semidirected-family : ∀ {Ix : Type o} → (Ix → Ob) → Type _
-  is-semidirected-family {Ix = Ix} f = ∀ i j → ∥ has-ub f i j ∥
+  is-semidirected-family : ∀ {Ix : Type κ} → (Ix → Ob) → Type _
+  is-semidirected-family {Ix = Ix} f = ∀ i j → ∃[ k ∈ Ix ] is-ub (f i) (f j) (f k)
 
   is-semidirected-family-is-prop : ∀ {Ix} {f : Ix → Ob} → is-prop (is-semidirected-family f)
   is-semidirected-family-is-prop = hlevel!
 
-  record is-directed-family {Ix : Type o} (f : Ix → Ob) : Type (o ⊔ ℓ) where
+  record is-directed-family {Ix : Type κ} (f : Ix → Ob) : Type (lsuc κ ⊔ o ⊔ ℓ) where
     no-eta-equality
     field
       elt : ∥ Ix ∥
@@ -77,7 +77,7 @@ automatically semi-directed:
 
 ```agda
   prop-indexed→semidirected
-    : ∀ {Ix : Type o} → (s : Ix → Ob) → is-prop Ix
+    : ∀ {Ix : Type κ} → (s : Ix → Ob) → is-prop Ix
     → is-semidirected-family s
   prop-indexed→semidirected s prop i j =
     inc (i , ≤-refl , path→≤ (ap s (prop j i)))
@@ -87,13 +87,13 @@ The poset $(P, \le)$ is a **directed-complete partial order**, or DCPO,
 if it has [[least upper bounds]] of all directed families.
 
 ```agda
-  record is-dcpo : Type (lsuc o ⊔ ℓ) where
+  record is-dcpo : Type (lsuc κ ⊔ o ⊔ ℓ) where
     no-eta-equality
     field
       directed-lubs
-        : ∀ {Ix : Type o} (f : Ix → Ob) → is-directed-family f → Lub f
+        : ∀ {Ix : Type κ} (f : Ix → Ob) → is-directed-family f → Lub f
 
-    module ⋃ {Ix : Type o} (f : Ix → Ob) (dir : is-directed-family f) =
+    module ⋃ {Ix : Type κ} (f : Ix → Ob) (dir : is-directed-family f) =
       Lub (directed-lubs f dir)
 
     open ⋃ using () renaming (lub to ⋃; fam≤lub to fam≤⋃; least to ⋃-least) public
@@ -112,7 +112,7 @@ module _ {o ℓ} {P : Poset o ℓ} where
 -->
 
 ```agda
-  is-dcpo-is-prop : is-prop (is-dcpo P)
+  is-dcpo-is-prop : ∀ {κ} → is-prop (is-dcpo {κ} P)
   is-dcpo-is-prop = Iso→is-hlevel 1 eqv hlevel!
     where unquoteDecl eqv = declare-record-iso eqv (quote is-dcpo)
 ```
@@ -140,13 +140,13 @@ module _ {P Q : Poset o ℓ} where
 -->
 
 ```agda
-  is-scott-continuous : (f : Posets.Hom P Q) → Type _
-  is-scott-continuous f =
-    ∀ {Ix} (s : Ix → P.Ob) (fam : is-directed-family P s)
+  is-scott-continuous : (κ : Level) (f : Posets.Hom P Q) → Type (o ⊔ ℓ ⊔ lsuc κ)
+  is-scott-continuous κ f =
+    ∀ {Ix : Type κ} (s : Ix → P.Ob) (fam : is-directed-family P s)
     → ∀ x → P.is-lub s x → Q.is-lub (f .hom ⊙ s) (f .hom x)
 
   is-scott-continuous-is-prop
-    : ∀ (f : Posets.Hom P Q) → is-prop (is-scott-continuous f)
+    : ∀ {κ} (f : Posets.Hom P Q) → is-prop (is-scott-continuous κ f)
   is-scott-continuous-is-prop = hlevel!
 ```
 
@@ -167,9 +167,10 @@ $$
 ```agda
   opaque
     dcpo+scott→monotone
-      : is-dcpo P
+      : ∀ {κ} 
+      → is-dcpo {κ = κ} P
       → (f : P.Ob → Q.Ob)
-      → (∀ {Ix} (s : Ix → Poset.Ob P) (fam : is-directed-family P s)
+      → (∀ {κ} {Ix : Type κ} (s : Ix → Poset.Ob P) (fam : is-directed-family {κ = κ} P s)
          → ∀ x → P.is-lub s x → Q.is-lub (f ⊙ s) (f x))
       → ∀ {x y} → x P.≤ y → f x Q.≤ f y
     dcpo+scott→monotone is-dcpo f scott {x} {y} p =
@@ -202,7 +203,7 @@ P$ is a directed family, then $fs : I \to Q$ is still a directed family.
 
 ```agda
   monotone∘directed
-    : ∀ {Ix : Type o}
+    : ∀ {κ} {Ix : Type κ}
     → {s : Ix → P.Ob}
     → (f : Posets.Hom P Q)
     → is-directed-family P s
@@ -306,12 +307,12 @@ module _ {P Q : Poset o ℓ} where
 
 <!--
 ```agda
-module _ (I : Set o) ⦃ d : Discrete ⌞ I ⌟ ⦄ (F : ⌞ I ⌟ → Poset o ℓ) where
+module _ {κ} (I : Set κ) (F : ⌞ I ⌟ → Poset o ℓ) where
   open is-directed-family
   private
     
     module F {i : ⌞ I ⌟} where
-      open Poset (F i) public
+      open Order.Reasoning (F i) public
       open Order.Diagram.Lub (F i) public
       open Lub public
       open is-lub public
@@ -324,58 +325,63 @@ module _ (I : Set o) ⦃ d : Discrete ⌞ I ⌟ ⦄ (F : ⌞ I ⌟ → Poset o �
 
     ΣF = Disjoint I F
 
+    ⌞F⌟ : ⌞ I ⌟ → Type _
+    ⌞F⌟ e = ⌞ F e ⌟
 
-  restricted-fam-directed : {J : Type o} → (s : J → ΣF.Ob) → Type _
-  restricted-fam-directed {J} s = Σ[ i ∈ ⌞ I ⌟ ] Σ[ f ∈ (J → ⌞ F i ⌟) ] ((s ≡ (i ,_) ⊙ f) × is-directed-family (F i) f)
 
-  discrete-Σ-directed→restriced-fam-directed
-    : {A : Type o} 
+
+
+  restricted-fam-directed : ∀ {κ} {J : Type κ} → (s : J → ΣF.Ob) → Type _
+  restricted-fam-directed {J = J} s = 
+      Σ[ i ∈ ⌞ I ⌟ ] 
+      Σ[ f ∈ (J → ⌞ F i ⌟) ] (
+        (s ≡ (i ,_) ⊙ f) × 
+        is-directed-family (F i) f
+      )
+
+  Σ-directed→restricted-fam-directed
+    : ∀ {κ} {A : Type κ} 
       {s : A → ΣF.Ob}
       → is-directed-family ΣF s
       → ∥ restricted-fam-directed s ∥
-  discrete-Σ-directed→restriced-fam-directed {A} {s} dir = {!   !} -- ∥-∥-rec! (λ x → inc (rfd x)) (dir .elt)
+  Σ-directed→restricted-fam-directed {κ} {A} {s} dir = ∥-∥-map rfd (dir .elt)
     where module _ (a : A) where
-
-      unite : ∀ {i j x y} (u v : A) → s u ≡ᵢ (i , x) → s v ≡ᵢ (j , y) → ∥ i ≡ᵢ j ∥
-      unite u v p q = ∥-∥-map (go u v p q ) (dir .semidirected u v) where
-        go : ∀ {i j x y} (u v : A) → s u ≡ᵢ (i , x) → s v ≡ᵢ (j , y) → has-ub ΣF s u v → i ≡ᵢ j
-        go u v with s u | s v
-        ... | _ | _ = λ where reflᵢ reflᵢ (_ , (reflᵢ , _) , (reflᵢ , _)) → reflᵢ
-
-      -- lemma : A ↪ ⌞ I ⌟
-      -- lemma .fst = fst ⊙ s
-      -- lemma .snd i (a , p) (b , q) = Σ-pathp {!   !} {!   !} -- (is-prop→pathp (λ i → I .is-tr _ _) p q)
-      --   where
-      --     w : s a .fst ≡ s b .fst
-      --     w = p ∙ sym q
-
-      lemma : ⌞ I ⌟ ↪ A
-      lemma .fst = {!   !}
-      lemma .snd = {!   !}
       
-      -- rfd : restricted-fam-directed s
-      -- rfd with s a  | recallᵢ s a
-      -- ... | (i , x) | ⟪ eq ⟫ᵢ = i , f , {!   !} , {!   !}
-      --   where
-      --     open ΣF
+      opaque
+        i : ⌞ I ⌟ 
+        i = s a .fst
 
-      --     f : A → ⌞ F i ⌟
-      --     f b with s b  | recallᵢ s b
-      --     ... | (j , y) | ⟪ eq' ⟫ᵢ with i ≡ᵢ? j
-      --     ... | yes reflᵢ = y
-      --     ... | no ¬p = absurd (∥-∥-rec! (λ where reflᵢ → ¬p reflᵢ) (unite a b eq eq')) 
+        I-contr : ∀ b → s b .fst ≡ i
+        I-contr b = ∥-∥-rec! (λ (k , (p , sb≤sk) , (q , sa≤sk)) → p ∙ sym q) (dir .semidirected b a) 
 
-      --     f-injᵢ : (b : A) → s b ≡ (i , f b)
-      --     f-injᵢ b with i ≡ᵢ? s b .fst
-      --     ... | yes reflᵢ = refl
-      --     ... | no ¬p = absurd (∥-∥-rec! (λ where reflᵢ → ¬p reflᵢ) (unite a b eq reflᵢ))
+      rfd : restricted-fam-directed s
+      rfd = i , f , ext f-injᵢ , f-dir
+        where
+          open ΣF
 
-      --     f-dir : is-directed-family (F i) f
-      --     f-dir .elt = inc a
-      --     f-dir .semidirected = {!   !} where
-      --       semi-dir : (u v : A) (k : A) → (s u ≤ s k) → (s v ≤ s k) → has-ub (F i) f u v
-      --       semi-dir u v k = {!   !}
-            -- subst (λ s → (s u ≤ s k) → (s v ≤ s k) → has-ub (F i) f u v) (ext f-injᵢ) {!   !}
+          f : A → ⌞ F i ⌟
+          f b = subst (λ i → ⌞ F i ⌟) (I-contr _) (s b .snd)
+
+          f-injᵢ : (b : A) → s b ≡ (i , f b)
+          f-injᵢ b = Σ-pathp (I-contr _) (subst-filler (λ i → ⌞ F i ⌟) (I-contr _) (s b .snd)) 
+
+          f-dir : is-directed-family (F i) f
+          f-dir .elt = inc a
+          f-dir .semidirected a b = ∥-∥-map (λ (k , ub) → k , to-ub a b k ub) (dir .semidirected a b) where
+          
+            to-ub : ∀ a b k → is-ub {κ = κ} ΣF (s a) (s b) (s k) → is-ub {κ = κ} (F i) (f a) (f b) (f k)
+            to-ub a b k ((p , sa≤sk) , (q , sb≤sk)) .fst =
+              subst ⌞F⌟ ⌜ I-contr a ⌝ (s a .snd) F.=⟨ ap! (I .is-tr _ _ _ _) ⟩ 
+              subst ⌞F⌟ (p ∙ I-contr k) (s a .snd) F.=⟨ subst-∙ ⌞F⌟ _ _ _ ⟩ 
+              subst ⌞F⌟ (I-contr k) (subst ⌞F⌟ p (s a .snd)) F.≤⟨ Substᵖ I F (I-contr k) .pres-≤ sa≤sk ⟩
+              subst ⌞F⌟ (I-contr k) (s k .snd) F.≤∎
+
+            to-ub a b k ((p , sa≤sk) , (q , sb≤sk)) .snd = 
+              subst ⌞F⌟ ⌜ I-contr b ⌝ (s b .snd) F.=⟨ ap! (I .is-tr _ _ _ _) ⟩ 
+              subst ⌞F⌟ (q ∙ I-contr k) (s b .snd) F.=⟨ subst-∙ ⌞F⌟ _ _ _ ⟩ 
+              subst ⌞F⌟ (I-contr k) (subst ⌞F⌟ q (s b .snd)) F.≤⟨ Substᵖ I F (I-contr k) .pres-≤ sb≤sk ⟩
+              subst ⌞F⌟ (I-contr k) (s k .snd) F.≤∎
+
 ```
 -->
 
@@ -391,8 +397,7 @@ The identity function is Scott-continuous.
 
 ```agda
   scott-id
-    : ∀ {P : Poset o ℓ}
-    → is-scott-continuous (Posets.id {x = P})
+    : ∀ {P : Poset o ℓ} {κ} → is-scott-continuous κ (Posets.id {x = P})
   scott-id s fam x lub = lub
 ```
 
@@ -400,10 +405,10 @@ Scott-continuous functions are closed under composition.
 
 ```agda
   scott-∘
-    : ∀ {P Q R : Poset o ℓ}
+    : ∀ {P Q R : Poset o ℓ} {κ}
     → (f : Posets.Hom Q R) (g : Posets.Hom P Q)
-    → is-scott-continuous f → is-scott-continuous g
-    → is-scott-continuous (f Posets.∘ g)
+    → is-scott-continuous κ f → is-scott-continuous κ g
+    → is-scott-continuous κ (f Posets.∘ g)
   scott-∘ f g f-scott g-scott s dir x lub =
     f-scott (g .hom ⊙ s)
       (monotone∘directed g dir)
@@ -420,28 +425,28 @@ identity of their underlying posets: thus, the category of DCPOs is
 [[univalent|univalent category]].
 
 ```agda
-DCPOs-subcat : ∀ (o ℓ : Level) → Subcat (Posets o ℓ) (lsuc o ⊔ ℓ) (lsuc o ⊔ ℓ)
-DCPOs-subcat o ℓ .Subcat.is-ob = is-dcpo
-DCPOs-subcat o ℓ .Subcat.is-hom f _ _ = is-scott-continuous f
-DCPOs-subcat o ℓ .Subcat.is-hom-prop f _ _ = is-scott-continuous-is-prop f
-DCPOs-subcat o ℓ .Subcat.is-hom-id _ = scott-id
-DCPOs-subcat o ℓ .Subcat.is-hom-∘ {f = f} {g = g} = scott-∘ f g
+DCPOs-subcat : ∀ (o ℓ κ : Level) → Subcat (Posets o ℓ) (lsuc κ ⊔ o ⊔ ℓ) (lsuc κ ⊔ o ⊔ ℓ)
+DCPOs-subcat o ℓ κ .Subcat.is-ob = is-dcpo {κ = κ}
+DCPOs-subcat o ℓ κ .Subcat.is-hom f _ _ = is-scott-continuous κ f
+DCPOs-subcat o ℓ κ .Subcat.is-hom-prop f _ _ = is-scott-continuous-is-prop f
+DCPOs-subcat o ℓ κ .Subcat.is-hom-id _ = scott-id
+DCPOs-subcat o ℓ κ .Subcat.is-hom-∘ {f = f} {g = g} = scott-∘ f g
 
-DCPOs : ∀ (o ℓ : Level) → Precategory (lsuc (o ⊔ ℓ)) (lsuc o ⊔ ℓ)
-DCPOs o ℓ = Subcategory (DCPOs-subcat o ℓ)
+DCPOs : ∀ (o ℓ κ : Level) → Precategory _ _
+DCPOs o ℓ κ = Subcategory (DCPOs-subcat o ℓ κ)
 
-DCPOs-is-category : ∀ {o ℓ} → is-category (DCPOs o ℓ)
+DCPOs-is-category : ∀ {o ℓ κ} → is-category (DCPOs o ℓ κ)
 DCPOs-is-category = subcat-is-category Posets-is-category (λ _ → is-dcpo-is-prop)
 ```
 
 <!--
 ```agda
-module DCPOs {o ℓ : Level} = Cat.Reasoning (DCPOs o ℓ)
+module DCPOs {o ℓ κ : Level} = Cat.Reasoning (DCPOs o ℓ κ)
 
-DCPO : (o ℓ : Level) → Type _
-DCPO o ℓ = DCPOs.Ob {o} {ℓ}
+DCPO : (o ℓ κ : Level) → Type _
+DCPO o ℓ κ = DCPOs.Ob {o} {ℓ} {κ}
 
-Forget-DCPO : ∀ {o ℓ} → Functor (DCPOs o ℓ) (Sets o)
+Forget-DCPO : ∀ {o ℓ κ} → Functor (DCPOs o ℓ κ) (Sets o)
 Forget-DCPO = Forget-poset F∘ Forget-subcat
 ```
 -->
@@ -458,7 +463,7 @@ in formalisation but not for informal reading.
 </summary>
 
 ```agda
-module DCPO {o ℓ} (D : DCPO o ℓ) where
+module DCPO {o ℓ κ} (D : DCPO o ℓ κ) where
   poset : Poset o ℓ
   poset = D .fst
 
@@ -480,7 +485,7 @@ module DCPO {o ℓ} (D : DCPO o ℓ) where
   ⋃-pointwise p = ⋃.least _ _ (⋃ _ _) λ ix →
     ≤-trans (p ix) (⋃.fam≤lub _ _ ix)
 
-module Scott {o ℓ} {D E : DCPO o ℓ} (f : DCPOs.Hom D E) where
+module Scott {o ℓ κ} {D E : DCPO o ℓ κ} (f : DCPOs.Hom D E) where
   private
     module D where
       open DCPO D public
@@ -497,17 +502,17 @@ module Scott {o ℓ} {D E : DCPO o ℓ} (f : DCPOs.Hom D E) where
 
   opaque
     pres-directed-lub
-      : ∀ {Ix} (s : Ix → D.Ob) → is-directed-family D.poset s
+      : ∀ {Ix : Type κ} (s : Ix → D.Ob) → is-directed-family D.poset s
       → ∀ x → D.is-lub s x → E.is-lub (apply f ⊙ s) (f # x)
     pres-directed-lub = Subcat-hom.witness f
 
     directed
-      : ∀ {Ix} {s : Ix → D.Ob} → is-directed-family D.poset s
+      : ∀ {Ix : Type κ} {s : Ix → D.Ob} → is-directed-family D.poset s
       → is-directed-family E.poset (apply f ⊙ s)
     directed dir = monotone∘directed mono dir
 
     pres-⋃
-      : ∀ {Ix} (s : Ix → D.Ob) → (dir : is-directed-family D.poset s)
+      : ∀ {Ix : Type κ} (s : Ix → D.Ob) → (dir : is-directed-family D.poset s)
       → f # (D.⋃ s dir) ≡ E.⋃ (apply f ⊙ s) (directed dir)
     pres-⋃ s dir =
       E.≤-antisym
@@ -521,7 +526,7 @@ module Scott {o ℓ} {D E : DCPO o ℓ} (f : DCPOs.Hom D E) where
 
 <!--
 ```
-module _ {o ℓ} {D E : DCPO o ℓ} where
+module _ {o ℓ κ} {D E : DCPO o ℓ κ} where
   private
     module D where
       open DCPO D public
@@ -576,7 +581,7 @@ is monotone, and thus Scott-continuous.
 ```agda
   to-scott-directed
     : (f : D.Ob → E.Ob)
-    → (∀ {Ix} (s : Ix → D.Ob) → (dir : is-directed-family D.poset s)
+    → (∀ {κ} {Ix : Type κ} (s : Ix → D.Ob) → (dir : is-directed-family D.poset s)
        → ∀ x → D.is-lub s x → E.is-lub (f ⊙ s) (f x))
     → DCPOs.Hom D E
   to-scott-directed f pres .Subcat-hom.hom .hom = f
@@ -585,3 +590,4 @@ is monotone, and thus Scott-continuous.
   to-scott-directed f pres .Subcat-hom.witness = pres
 ```
  
+   

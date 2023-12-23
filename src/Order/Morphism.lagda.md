@@ -32,8 +32,8 @@ relevant in the study of order theory:
 ```
 module _ {o ℓ o' ℓ'} (P : Poset o ℓ) (Q : Poset o' ℓ') (f : ⌞ P ⌟ → ⌞ Q ⌟) where
   private
-    module P = Poset P
-    module Q = Poset Q
+    module P = Order.Reasoning P
+    module Q = Order.Reasoning Q
 
   is-monotone : Type _
   is-monotone = ∀ {x y} → x P.≤ y → f x Q.≤ f y
@@ -76,8 +76,8 @@ module _ {o ℓ o' ℓ'} (P : Poset o ℓ) (Q : Poset o' ℓ') (f : ⌞ P ⌟ �
     : is-order-embedding → is-embedding f
   is-order-embedding→is-embedding p = injective→is-embedding! λ {x} {y} fx=fy →
     let
-      x≤y = Equiv.from p (Q.≤-refl' fx=fy)
-      y≤x = Equiv.from p (Q.≤-refl' (sym fx=fy))
+      x≤y = Equiv.from p (Q.path→≤ fx=fy)
+      y≤x = Equiv.from p (Q.path→≥ fx=fy)
     in P.≤-antisym x≤y y≤x
   ```
 

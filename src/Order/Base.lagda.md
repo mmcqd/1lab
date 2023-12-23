@@ -138,10 +138,6 @@ is automatically a set.
 
 <!--
 ```agda
-  abstract
-    ≤-refl' : ∀ {x y} → x ≡ y → x ≤ y
-    ≤-refl' {x = x} p = subst (x ≤_) p ≤-refl
-
 instance
   Underlying-Poset : ∀ {o ℓ} → Underlying (Poset o ℓ)
   Underlying-Poset .Underlying.ℓ-underlying = _
