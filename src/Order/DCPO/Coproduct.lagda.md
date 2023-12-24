@@ -61,8 +61,8 @@ module _ {o ℓ κ} (I : Set κ) (F : ⌞ I ⌟ → DCPO (o ⊔ κ) (ℓ ⊔ κ)
       open Lub public
       open is-lub public
 
-    _≤[_]_ : {i j : ⌞ I ⌟} → ⌞F⌟ i → i ≡ j → ⌞F⌟ j → Type _
-    _≤[_]_ x p y = subst ⌞F⌟ p x F.≤ y
+    _≤[_]_ : {i j : ⌞ I ⌟} → ⌞F⌟ i → i ≡ᵢ j → ⌞F⌟ j → Type _
+    _≤[_]_ x p y = substᵢ ⌞F⌟ p x F.≤ y
     
     module ΣF where
       open Order.Reasoning (Disjoint I Fᵖ) public
@@ -70,59 +70,100 @@ module _ {o ℓ κ} (I : Set κ) (F : ⌞ I ⌟ → DCPO (o ⊔ κ) (ℓ ⊔ κ)
       open Indexed-coproduct (Posets-has-set-indexed-coproducts {o} {ℓ} I Fᵖ) public
       open Lub public
       open is-lub public
-      open Displayed (Disjoint' I Fᵖ) public
+      open Displayed (Disjoint-disp I Fᵖ) public
     
 
 
-    Disjoint-Lub : ∀ {Ix : Type κ} (s : Ix → ΣF.Ob) (a : Ix) → restricted-fam-directed I Fᵖ s → ΣF.Lub s
+    Disjoint-Lub : {Ix : Type κ} (s : Ix → ΣF.Ob) (a : Ix) → restricted-fam-directed I Fᵖ s → ΣF.Lub s
     Disjoint-Lub s a (i , f , f-inj , f-dir) .ΣF.lub = i , F.⋃ f f-dir
-    Disjoint-Lub s a (i , f , f-inj , f-dir) .ΣF.has-lub .ΣF.fam≤lub x .fst = ap fst $ happly f-inj x
-    Disjoint-Lub s a (i , f , f-inj , f-dir) .ΣF.has-lub .ΣF.fam≤lub x .snd = sym (from-pathp $ ap snd $ happly f-inj x) F.▶ (F.fam≤⋃ f f-dir x)
-    Disjoint-Lub {Ix} s a (i , f , f-inj , f-dir) .ΣF.has-lub .ΣF.least (j , x) le = 
-      i≡j , lemma i≡j x (subst (λ g → ∀ k → g k ΣF.≤ (j , x)) f-inj le)
-      where
-        i≡j = (sym $ ap fst $ happly f-inj a) ∙ le a .fst
-
-        lemma : (p : i ≡ j) (x : ⌞F⌟ j) (le : (k : Ix) → (i , f k) ΣF.≤ (j , x)) → F.⋃ f f-dir ≤[ p ] x  
-        lemma = J (λ j p → (x : ⌞F⌟ j) (le : (k : Ix) → (i , f k) ΣF.≤ (j , x)) →  (F.⋃ f f-dir) ≤[ p ] x) $ λ x le → 
-          sym Regularity.reduce! F.▶ F.⋃-least f f-dir x λ b → -- f-≤ b (le b)
-            sym (subst-filler-set ⌞F⌟ (I .is-tr) _ _) F.▶ le b .snd
+    Disjoint-Lub s a (i , f , f-inj , f-dir) .ΣF.has-lub .ΣF.fam≤lub b with s b | equiv→inverse (Id≃path .snd) $ happly f-inj b
+    ... | (j , y) | reflᵢ = reflᵢ , F.fam≤⋃ f f-dir b
+    Disjoint-Lub s a (i , f , f-inj , f-dir) .ΣF.has-lub .ΣF.least (j , x) le with s a | le a | equiv→inverse (Id≃path .snd) $ happly f-inj a | equiv→inverse (Id≃path .snd) f-inj
+    ... | .i , .(f a) | reflᵢ , fa≤x | reflᵢ | reflᵢ = reflᵢ , F.⋃-least f f-dir x λ b → sym (substᵢ-filler-set ⌞F⌟ hlevel! _ _) F.▶ le b .snd
+    
+    open Indexed-coproduct
+    open is-indexed-coproduct
+    open Subcat-hom
 
     Disjoint-is-dcpo : is-dcpo {κ = κ} (Disjoint I Fᵖ)
     Disjoint-is-dcpo .directed-lubs {Ix} s dir = ∥-∥-rec₂! (λ a rdir → Disjoint-Lub s a rdir) (dir .elt) (Σ-directed→restricted-fam-directed I Fᵖ dir)
 
-
-    open Indexed-coproduct
-    open is-indexed-coproduct
-    open Subcat-hom
-    
     ΣFOb = (Disjoint I Fᵖ , Disjoint-is-dcpo) .DCPO.Ob
 
     DCPOs-has-set-indexed-coproducts : Indexed-coproduct (DCPOs _ _ _) F
-    DCPOs-has-set-indexed-coproducts .ΣF .fst = Disjoint I Fᵖ
-    DCPOs-has-set-indexed-coproducts .ΣF .snd = Disjoint-is-dcpo
-    DCPOs-has-set-indexed-coproducts .ι i = to-scottᵐ (Injᵖ i) λ s dir → 
-      ∥-∥-rec! (λ a → Disjoint-Lub ((i ,_) ⊙ s) a (i , s , refl , dir) .ΣF.has-lub) (dir .elt)
-    DCPOs-has-set-indexed-coproducts .has-is-ic .match {Y = Y} cs = to-scott-directed (λ (i , x) → cs i # x) λ {κ} {Ix} → is-cont {κ} {Ix}
-      where module _ {κ} {Ix : Type κ} (s : Ix → ΣFOb) (dir : is-directed-family (Disjoint I Fᵖ) s) where
+    DCPOs-has-set-indexed-coproducts .ΣF = Disjoint I Fᵖ , Disjoint-is-dcpo
+    DCPOs-has-set-indexed-coproducts .ι i = to-scottᵐ (Injᵖ i) λ s dir → ∥-∥-rec! (λ a → Disjoint-Lub ((i ,_) ⊙ s) a (i , s , refl , dir) .ΣF.has-lub) (dir .elt)
+    DCPOs-has-set-indexed-coproducts .has-is-ic .match {Y = Y} cases = to-scott-directed (λ (i , x) → cases i # x) λ {κ} {Ix} s dir → ∥-∥-rec₂! (is-cont {κ} {Ix} s dir) (dir .elt) (Σ-directed→restricted-fam-directed I Fᵖ dir)
+      where 
         module Y where
           open DCPO Y public
           open Order.Diagram.Lub poset public
           open Lub public
           open is-lub public
-        
-        restr = Σ-directed→restricted-fam-directed I Fᵖ dir
-        is-cont : _ 
-        is-cont (i , lub) is-lub .Y.fam≤lub a = 
-          let (p , sa≤lub) = is-lub .Y.fam≤lub a in
-          lemma p (s a .snd) lub sa≤lub where
-            lemma : ∀ {i j} (p : i ≡ j) (x : ⌞F⌟ i) (y : ⌞F⌟ j) → x ≤[ p ] y → cs i # x Y.≤ cs j # y
-            lemma {i} = J (λ j p → (x : ⌞F⌟ i) (y : ⌞F⌟ j) → x ≤[ p ] y → cs i # x Y.≤ cs j # y) λ x y x≤y →
-              cs i .hom .pres-≤ (Regularity.reduce! F.▶ x≤y)
-              
-        is-cont (i , lub) is-lub .F.least = {!   !}
+        module _ {κ} {Ix : Type κ} (s : Ix → ΣFOb) (dir : is-directed-family (Disjoint I Fᵖ) s) (a : Ix) where        
+          is-cont : (restr : restricted-fam-directed I Fᵖ s) → _ 
+          is-cont _ (i , lub) is-lub .Y.fam≤lub b with s b | is-lub .ΣF.fam≤lub b
+          ... | .i , y | reflᵢ , sa≤lub = cases i .hom .pres-≤ sa≤lub
+          is-cont (i , f , f-inj , f-dir) (j , lub) is-lub .F.least ub' le with equiv→inverse (Id≃path .snd) $ f-inj
+          ... | reflᵢ = 
+            let
+              foo : {!   !}
+              foo = is-lub .ΣF.least (i , {!   !}) λ a → reflᵢ , {! le a  !}
+            in
+            {!   !}
+            -- let (j , f , f-inj , f-dir) = restr in
     DCPOs-has-set-indexed-coproducts .has-is-ic .commute = {!   !}
     DCPOs-has-set-indexed-coproducts .has-is-ic .unique = {!   !}
+
+
+    -- Disjoint-Lub s a (i , f , f-inj , f-dir) .ΣF.lub = i , F.⋃ f f-dir
+    -- Disjoint-Lub s a (i , f , f-inj , f-dir) .ΣF.has-lub .ΣF.fam≤lub x .fst = ap fst $ happly f-inj x
+    -- Disjoint-Lub s a (i , f , f-inj , f-dir) .ΣF.has-lub .ΣF.fam≤lub x .snd = sym (from-pathp $ ap snd $ happly f-inj x) F.▶ (F.fam≤⋃ f f-dir x)
+    -- Disjoint-Lub {Ix} s a (i , f , f-inj , f-dir) .ΣF.has-lub .ΣF.least (j , x) le = 
+    --   i≡j , lemma i≡j x (subst (λ g → ∀ k → g k ΣF.≤ (j , x)) f-inj le)
+    --   where
+    --     i≡j = (sym $ ap fst $ happly f-inj a) ∙ le a .fst
+
+    --     lemma : (p : i ≡ j) (x : ⌞F⌟ j) (le : (k : Ix) → (i , f k) ΣF.≤ (j , x)) → F.⋃ f f-dir ≤[ p ] x  
+    --     lemma = J (λ j p → (x : ⌞F⌟ j) (le : (k : Ix) → (i , f k) ΣF.≤ (j , x)) →  (F.⋃ f f-dir) ≤[ p ] x) $ λ x le → 
+    --       sym Regularity.reduce! F.▶ F.⋃-least f f-dir x λ b → -- f-≤ b (le b)
+    --         sym (subst-filler-set ⌞F⌟ (I .is-tr) _ _) F.▶ le b .snd
+
+    -- Disjoint-is-dcpo : is-dcpo {κ = κ} (Disjoint I Fᵖ)
+    -- Disjoint-is-dcpo .directed-lubs {Ix} s dir = ∥-∥-rec₂! (λ a rdir → Disjoint-Lub s a rdir) (dir .elt) (Σ-directed→restricted-fam-directed I Fᵖ dir)
+
+
+    -- open Indexed-coproduct
+    -- open is-indexed-coproduct
+    -- open Subcat-hom
+    
+    -- ΣFOb = (Disjoint I Fᵖ , Disjoint-is-dcpo) .DCPO.Ob
+
+    -- DCPOs-has-set-indexed-coproducts : Indexed-coproduct (DCPOs _ _ _) F
+    -- DCPOs-has-set-indexed-coproducts .ΣF .fst = Disjoint I Fᵖ
+    -- DCPOs-has-set-indexed-coproducts .ΣF .snd = Disjoint-is-dcpo
+    -- DCPOs-has-set-indexed-coproducts .ι i = to-scottᵐ (Injᵖ i) λ s dir → 
+    --   ∥-∥-rec! (λ a → Disjoint-Lub ((i ,_) ⊙ s) a (i , s , refl , dir) .ΣF.has-lub) (dir .elt)
+    -- DCPOs-has-set-indexed-coproducts .has-is-ic .match {Y = Y} cs = to-scott-directed (λ (i , x) → cs i # x) λ {κ} {Ix} → is-cont {κ} {Ix}
+    --   where module _ {κ} {Ix : Type κ} (s : Ix → ΣFOb) (dir : is-directed-family (Disjoint I Fᵖ) s) where
+    --     module Y where
+    --       open DCPO Y public
+    --       open Order.Diagram.Lub poset public
+    --       open Lub public
+    --       open is-lub public
+        
+    --     restr = Σ-directed→restricted-fam-directed I Fᵖ dir
+    --     is-cont : _ 
+    --     is-cont (i , lub) is-lub .Y.fam≤lub a = 
+    --       let (p , sa≤lub) = is-lub .Y.fam≤lub a in
+    --       lemma p (s a .snd) lub sa≤lub where
+    --         lemma : ∀ {i j} (p : i ≡ j) (x : ⌞F⌟ i) (y : ⌞F⌟ j) → x ≤[ p ] y → cs i # x Y.≤ cs j # y
+    --         lemma {i} = J (λ j p → (x : ⌞F⌟ i) (y : ⌞F⌟ j) → x ≤[ p ] y → cs i # x Y.≤ cs j # y) λ x y x≤y →
+    --           cs i .hom .pres-≤ (Regularity.reduce! F.▶ x≤y)
+              
+    --     is-cont (i , lub) is-lub .F.least ub' = {!   !}
+    -- DCPOs-has-set-indexed-coproducts .has-is-ic .commute = {!   !}
+    -- DCPOs-has-set-indexed-coproducts .has-is-ic .unique = {!   !}
   
 -- ```agda
 
@@ -247,6 +288,6 @@ module _ {o ℓ κ} (I : Set κ) (F : ⌞ I ⌟ → DCPO (o ⊔ κ) (ℓ ⊔ κ)
 --   DCPOs-initial .has⊥ x .centre = to-scott-directed (λ ()) λ s dir _ _ → ∥-∥-rec! (λ i → absurd (s i .Lift.lower)) (dir .elt) 
 --     where open Order.Diagram.Lub (x .fst)
 --   DCPOs-initial .has⊥ x .paths f = ext λ ()
--- ```   
-                        
-                             
+-- ```     
+                           
+                                 

@@ -157,12 +157,12 @@ abstract
     → is-hlevel (a ≡ᵢ b) n
   Id-is-hlevel' n p = is-hlevel≃ n Id≃path (Path-is-hlevel' n p _ _)
 
-substᵢ-filler-set : ∀ {ℓ ℓ'} {A : Type ℓ} {P : A → Type ℓ'}
+substᵢ-filler-set : ∀ {ℓ ℓ'} {A : Type ℓ} (P : A → Type ℓ')
                 → is-set A
                 → {a : A}
                 → (p : a ≡ᵢ a)
                 → ∀ x → x ≡ substᵢ P p x 
-substᵢ-filler-set {P = P} is-set-A p x = subst (λ q → x ≡ substᵢ P q x) (is-set→is-setᵢ is-set-A _ _ reflᵢ p) refl
+substᵢ-filler-set P is-set-A p x = subst (λ q → x ≡ substᵢ P q x) (is-set→is-setᵢ is-set-A _ _ reflᵢ p) refl
 
 record Recallᵢ
   {a b} {A : Type a} {B : A → Type b}

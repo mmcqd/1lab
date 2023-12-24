@@ -351,36 +351,59 @@ module _ {κ} (I : Set κ) (F : ⌞ I ⌟ → Poset o ℓ) where
         i : ⌞ I ⌟ 
         i = s a .fst
 
-        I-contr : ∀ b → s b .fst ≡ i
-        I-contr b = ∥-∥-rec! (λ (k , (p , sb≤sk) , (q , sa≤sk)) → p ∙ sym q) (dir .semidirected b a) 
+        I-contr : ∀ b → s b .fst ≡ᵢ i
+        I-contr b = ∥-∥-rec! (λ (k , (p , sb≤sk) , (q , sa≤sk)) → p ∙ᵢ symᵢ q) (dir .semidirected b a) 
 
       rfd : restricted-fam-directed s
       rfd = i , f , ext f-injᵢ , f-dir
         where
           open ΣF
 
-          f : A → ⌞ F i ⌟
-          f b = subst (λ i → ⌞ F i ⌟) (I-contr _) (s b .snd)
+          f : A → ⌞F⌟ i
+          f b = substᵢ ⌞F⌟ (I-contr _) (s b .snd)
 
           f-injᵢ : (b : A) → s b ≡ (i , f b)
-          f-injᵢ b = Σ-pathp (I-contr _) (subst-filler (λ i → ⌞ F i ⌟) (I-contr _) (s b .snd)) 
+          f-injᵢ b with s b | I-contr b
+          ... | (j , y) | reflᵢ = refl
 
           f-dir : is-directed-family (F i) f
           f-dir .elt = inc a
-          f-dir .semidirected a b = ∥-∥-map (λ (k , ub) → k , to-ub a b k ub) (dir .semidirected a b) where
-          
-            to-ub : ∀ a b k → is-ub {κ = κ} ΣF (s a) (s b) (s k) → is-ub {κ = κ} (F i) (f a) (f b) (f k)
-            to-ub a b k ((p , sa≤sk) , (q , sb≤sk)) .fst =
-              subst ⌞F⌟ ⌜ I-contr a ⌝ (s a .snd) F.=⟨ ap! (I .is-tr _ _ _ _) ⟩ 
-              subst ⌞F⌟ (p ∙ I-contr k) (s a .snd) F.=⟨ subst-∙ ⌞F⌟ _ _ _ ⟩ 
-              subst ⌞F⌟ (I-contr k) (subst ⌞F⌟ p (s a .snd)) F.≤⟨ Substᵖ I F (I-contr k) .pres-≤ sa≤sk ⟩
-              subst ⌞F⌟ (I-contr k) (s k .snd) F.≤∎
+          f-dir .semidirected a b = ∥-∥-map (λ (k , ub) → k , to-ub a b k ub) (dir .semidirected a b)
+            where
+              to-ub : ∀ a b k → is-ub {κ = κ} ΣF (s a) (s b) (s k) → is-ub {κ = κ} (F i) (f a) (f b) (f k)
+              to-ub a b k ((p , sa≤sk) , (q , sb≤sk)) .fst with s a | I-contr a
+              ... | .i , y | reflᵢ with s k | I-contr k
+              ... | .i , z | reflᵢ = sym (substᵢ-filler-set ⌞F⌟ hlevel! _ _) F.▶ sa≤sk
+              to-ub a b k ((p , sa≤sk) , (q , sb≤sk)) .snd with s b | I-contr b
+              ... | .i , y | reflᵢ with s k | I-contr k
+              ... | .i , z | reflᵢ = sym (substᵢ-filler-set ⌞F⌟ hlevel! _ _) F.▶ sb≤sk
+           
+      -- rfd = i , f , ext f-injᵢ , f-dir
+      --   where
+      --     open ΣF
 
-            to-ub a b k ((p , sa≤sk) , (q , sb≤sk)) .snd = 
-              subst ⌞F⌟ ⌜ I-contr b ⌝ (s b .snd) F.=⟨ ap! (I .is-tr _ _ _ _) ⟩ 
-              subst ⌞F⌟ (q ∙ I-contr k) (s b .snd) F.=⟨ subst-∙ ⌞F⌟ _ _ _ ⟩ 
-              subst ⌞F⌟ (I-contr k) (subst ⌞F⌟ q (s b .snd)) F.≤⟨ Substᵖ I F (I-contr k) .pres-≤ sb≤sk ⟩
-              subst ⌞F⌟ (I-contr k) (s k .snd) F.≤∎
+      --     f : A → ⌞ F i ⌟
+      --     f b = subst (λ i → ⌞ F i ⌟) (I-contr _) (s b .snd)
+
+      --     f-injᵢ : (b : A) → s b ≡ (i , f b)
+      --     f-injᵢ b = Σ-pathp (I-contr _) (subst-filler (λ i → ⌞ F i ⌟) (I-contr _) (s b .snd)) 
+
+      --     f-dir : is-directed-family (F i) f
+      --     f-dir .elt = inc a
+      --     f-dir .semidirected a b = ∥-∥-map (λ (k , ub) → k , to-ub a b k ub) (dir .semidirected a b) where
+          
+      --       to-ub : ∀ a b k → is-ub {κ = κ} ΣF (s a) (s b) (s k) → is-ub {κ = κ} (F i) (f a) (f b) (f k)
+      --       to-ub a b k ((p , sa≤sk) , (q , sb≤sk)) .fst =
+      --         subst ⌞F⌟ ⌜ I-contr a ⌝ (s a .snd) F.=⟨ ap! (I .is-tr _ _ _ _) ⟩ 
+      --         subst ⌞F⌟ (p ∙ I-contr k) (s a .snd) F.=⟨ subst-∙ ⌞F⌟ _ _ _ ⟩ 
+      --         subst ⌞F⌟ (I-contr k) (subst ⌞F⌟ p (s a .snd)) F.≤⟨ Substᵖ I F (I-contr k) .pres-≤ sa≤sk ⟩
+      --         subst ⌞F⌟ (I-contr k) (s k .snd) F.≤∎
+
+      --       to-ub a b k ((p , sa≤sk) , (q , sb≤sk)) .snd = 
+      --         subst ⌞F⌟ ⌜ I-contr b ⌝ (s b .snd) F.=⟨ ap! (I .is-tr _ _ _ _) ⟩ 
+      --         subst ⌞F⌟ (q ∙ I-contr k) (s b .snd) F.=⟨ subst-∙ ⌞F⌟ _ _ _ ⟩ 
+      --         subst ⌞F⌟ (I-contr k) (subst ⌞F⌟ q (s b .snd)) F.≤⟨ Substᵖ I F (I-contr k) .pres-≤ sb≤sk ⟩
+      --         subst ⌞F⌟ (I-contr k) (s k .snd) F.≤∎
 
 ```
 -->
@@ -589,5 +612,5 @@ is monotone, and thus Scott-continuous.
     dcpo+scott→monotone D.has-dcpo f pres
   to-scott-directed f pres .Subcat-hom.witness = pres
 ```
- 
+  
    
