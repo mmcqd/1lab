@@ -46,6 +46,11 @@ module _ {ℓ ℓₐ ℓᵣ} (I : Set ℓ) (F : ⌞ I ⌟ → Poset ℓₐ ℓ�
   Substᵖ reflᵢ .hom = λ x → x
   Substᵖ reflᵢ .pres-≤ = λ x≤y → x≤y
 
+  ≤→≤[i≡ᵢi] : ∀ {i} {x y : ⌞F⌟ i} {p : i ≡ᵢ i} → x ≤ y → x ≤[ p ]' y
+  ≤→≤[i≡ᵢi] {p = p} x≤y = substᵢ-filler-set ⌞F⌟ hlevel! p _ F.▶ x≤y
+
+  ≤[i≡ᵢi]→≤ : ∀ {i} {x y : ⌞F⌟ i} {p : i ≡ᵢ i} → x ≤[ p ]' y → x ≤ y
+  ≤[i≡ᵢi]→≤ {p = p} x≤y = sym (substᵢ-filler-set ⌞F⌟ hlevel! p _) F.▶ x≤y 
 
   Disjoint-disp : Displayed _ _ (Discᵢ I)
   Disjoint-disp .Displayed.Ob[_] = ⌞F⌟
