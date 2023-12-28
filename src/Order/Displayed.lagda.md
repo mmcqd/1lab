@@ -68,7 +68,7 @@ make a new poset.
 
 ```agda
 ∫ : ∀ {ℓ ℓ' ℓₒ ℓᵣ} {P : Poset ℓₒ ℓᵣ} → Displayed ℓ ℓ' P → Poset _ _
-∫ {P = P} D = po where
+∫ {P = P} D = po module ∫ where
   module D = Displayed D
   module P = Pr P
 
@@ -81,6 +81,7 @@ make a new poset.
   po .Poset.≤-antisym (p , p') (q , q') =
     Σ-pathp (P.≤-antisym p q) (D.≤-antisym-over p' q')
 
+{-# DISPLAY ∫.po D = ∫ D #-}
 open Displayed
 ```
 

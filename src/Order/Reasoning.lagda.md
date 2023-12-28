@@ -48,4 +48,15 @@ f ≤∎ = ≤-refl
 
 infixr 2 _=⟨_⟩_ _=˘⟨_⟩_ _≤⟨_⟩_
 infix  3 _≤∎
+
+
+_▶_ : a ≡ b → b ≤ c → a ≤ c
+_▶_ p le = subst (_≤ _) (sym p) le
+
+_◀_ : b ≤ c → c ≡ d →  b ≤ d
+_◀_ le p = subst (_ ≤_) p le
+
+_▶_◀_ : a ≡ b → b ≤ c → c ≡ d → a ≤ d
+p ▶ le ◀ q = p ▶ (le ◀ q)
+
 ```

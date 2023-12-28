@@ -161,3 +161,29 @@ is-initial→is-disjoint-coproduct {F = F} {i = i} init = is-disjoint where
   is-disjoint .summands-intersect i j = absurd i
   is-disjoint .different-images-are-disjoint i j p = absurd i
 ```
+
+## Binary coproducts are a special case of indexed coproducts
+
+```agda
+open import Cat.Diagram.Coproduct
+open Coproduct
+open is-coproduct
+open Indexed-coproduct
+open is-indexed-coproduct
+open import Data.Bool
+
+bool-indexed-coproducts→coproducts : has-coproducts-indexed-by Bool → has-coproducts C
+bool-indexed-coproducts→coproducts has-idx-coprod a b = coprod
+  where
+    module IC = Indexed-coproduct (has-idx-coprod (if_then a else b))
+    
+    coprod : Coproduct _ _ _
+    coprod .coapex = IC.ΣF
+    coprod .in₀ = IC.ι true
+    coprod .in₁ = IC.ι false
+    coprod .has-is-coproduct .[_,_] f g = IC.match (Bool-elim _ f g)
+    coprod .has-is-coproduct .in₀∘factor = IC.commute
+    coprod .has-is-coproduct .in₁∘factor = IC.commute
+    coprod .has-is-coproduct .unique other in₀ in₁ = IC.unique _ (Bool-elim _ in₀ in₁)
+
+``` 

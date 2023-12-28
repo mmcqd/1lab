@@ -109,6 +109,14 @@ whenever it is a family of propositions, by providing a case for
   → (x : ∥ A ∥) → P
 ∥-∥-rec! {pprop = pprop} = ∥-∥-elim (λ _ → pprop)
 
+∥-∥-rec₂!
+  : ∀ {ℓ ℓ' ℓ''} {A : Type ℓ} {B : Type ℓ'} {P : Type ℓ''}
+  → {@(tactic hlevel-tactic-worker) pprop : is-prop P}
+  → (A → B → P)
+  → ∥ A ∥ → ∥ B ∥ → P
+∥-∥-rec₂! {pprop = pprop} = ∥-∥-elim₂ (λ _ _ → pprop)
+
+
 ∥-∥-proj! : ∀ {ℓ} {A : Type ℓ} → {@(tactic hlevel-tactic-worker) ap : is-prop A} → ∥ A ∥ → A
 ∥-∥-proj! {ap = ap} = ∥-∥-proj ap
 ```
@@ -265,6 +273,17 @@ is-constant→image-is-prop bset f fconst (a , x) (b , y) =
     (∥-∥-elim₂ (λ _ _ → bset _ _)
       (λ { (f*a , p) (f*b , q) → sym p ·· fconst f*a f*b ·· q }) x y)
 ```
+
+<!--
+```agda
+is-constant∥∙∥→is-contr : 
+  ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'}
+  → is-set B
+  → (f : A → B) → (∀ x y → f x ≡ f y) → ∥ A ∥ → is-contr (image f)
+is-constant∥∙∥→is-contr bset f const a = ∥-∥-rec! (λ a → is-prop∙→is-contr (is-constant→image-is-prop bset f const) ((f a) , (inc (a , refl)))) a
+
+``` 
+-->
 
 Using the image factorisation, we can project from a propositional
 truncation onto a set using a constant map.

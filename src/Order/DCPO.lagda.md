@@ -2,13 +2,13 @@
 ```agda
 open import Cat.Displayed.Univalence.Thin using (extensionality-hom)
 open import Cat.Functor.Subcategory
-open import Cat.Displayed.Total
 open import Cat.Prelude
 
 open import Data.Bool
 
 open import Order.Univalent
 open import Order.Base
+open import Order.Instances.Disjoint
 
 import Cat.Reasoning
 
@@ -114,7 +114,6 @@ module _ {P Q : Poset o ℓ} where
       open Order.Diagram.Lub Q public
 
   open is-directed-family
-  open Total-hom
 ```
 -->
 
@@ -195,7 +194,6 @@ P$ is a directed family, then $fs : I \to Q$ is still a directed family.
 <!--
 ```agda
 module _ where
-  open Total-hom
 ```
 -->
 
@@ -343,7 +341,6 @@ module _ {o ℓ} {D E : DCPO o ℓ} where
       open Order.Diagram.Lub poset public
   
   open is-directed-family
-  open Total-hom
 ```
 -->
 
@@ -390,3 +387,77 @@ is monotone, and thus Scott-continuous.
   to-scott-directed f pres .Subcat-hom.witness = pres
 ```
  
+## Directed families of disjoint posets 
+```agda
+module ΣDirected {κ} (I : Set κ) (F : ⌞ I ⌟ → Poset (o ⊔ κ) (ℓ ⊔ κ)) where
+```
+<!--
+```agda
+  private
+    open is-directed-family
+
+    module F {i : ⌞ I ⌟} where
+      open Order.Reasoning (F i) public
+      open Order.Diagram.Lub (F i) public
+      open Lub public
+      open is-lub public
+      
+    module ΣF where
+      open Order.Reasoning (Disjoint I F) public
+      open Order.Diagram.Lub (Disjoint I F) public
+      open Lub public
+      open is-lub public
+
+    ΣF = Disjoint I F
+
+    ⌞F⌟ : ⌞ I ⌟ → Type _
+    ⌞F⌟ e = ⌞ F e ⌟
+```
+-->
+
+We consider the special case of the disjoint union of a set indexed family of posets $F$.
+If we have a directed family of elements of this poset, we can show that the family is "restricted"
+or "one-sided", in the sense that all it's elements share the same injection into the disjoint union.
+If we unfold the meaning of directed in our special case, it gets us a path between the injections of
+any two elements of the family.
+
+```agda
+  restrict-Σ-directed : ∀ {A : Type _} (s : A → ΣF.Ob) → Type _
+  restrict-Σ-directed {A = A} s = 
+    Σ[ i ∈ ⌞ I ⌟ ] 
+    Σ[ f ∈ (A → ⌞F⌟ i) ] (
+      (s ≡ᵢ (i ,_) ⊙ f) × 
+      is-directed-family (F i) f
+    )
+
+  Σ-directed→restricted : {A : Type _} (s : A → ΣF.Ob) (dir : is-directed-family ΣF s) → ∥ restrict-Σ-directed s ∥
+  Σ-directed→restricted {A = A} s dir = ∥-∥-map restr (dir .elt)
+    where module _ (a : A) where
+
+      i : ⌞ I ⌟
+      i = s a .fst
+
+      I-contr : ∀ b → s b .fst ≡ᵢ i
+      I-contr b = ∥-∥-rec! (λ where (_ , (p , _) , (q , _)) → q ∙ᵢ symᵢ p) (dir .semidirected a b)
+
+      restr : restrict-Σ-directed s
+      restr = i , f , equiv→inverse (Id≃path .snd) (ext f-inj) , f-dir where
+        
+        f : A → ⌞F⌟ i
+        f b with s b | I-contr b
+        ... | .i , y | reflᵢ = y
+
+        f-inj : ∀ b → s b ≡ (i , f b)
+        f-inj b with s b | I-contr b
+        ... | .i , y | reflᵢ = refl
+
+        f-dir : is-directed-family (F i) f
+        f-dir .elt = inc a
+        f-dir .semidirected b c = ∥-∥-map semidir (dir .semidirected b c) where
+          semidir : _
+          semidir (k , sb≤sk , sc≤sk) .fst = k
+          semidir (k , (p , sb≤sk) , sc≤sk) .snd .fst with s b | I-contr b | s k | I-contr k
+          ... | .i , y | reflᵢ | .i , z | reflᵢ = substᵢ-filler-set ⌞F⌟ hlevel! _ _ F.▶ sb≤sk
+          semidir (k , sb≤sk , (p , sc≤sk)) .snd .snd with s c | I-contr c | s k | I-contr k
+          ... | .i , y | reflᵢ | .i , z | reflᵢ = substᵢ-filler-set ⌞F⌟ hlevel! _ _ F.▶ sc≤sk
+```  
