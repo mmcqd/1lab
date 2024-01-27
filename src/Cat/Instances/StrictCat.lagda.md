@@ -39,9 +39,9 @@ $\strcat$.
 ```agda
 private unquoteDecl eqv = declare-record-iso eqv (quote Functor)
 
-Functor-is-set : ∀ {o h} {C D : Precategory o h} → is-set (Ob D)
+Functor-is-set : ∀ {o₁ o₂ h₁ h₂} {C : Precategory o₁ h₁} {D : Precategory o₂ h₂} → is-set (Ob D)
                → is-set (Functor C D)
-Functor-is-set {o = o} {h} {C} {D} dobset =
+Functor-is-set {C = C} {D} dobset =
   Iso→is-hlevel 2 eqv (hlevel 2)
   where
     open Precategory.HLevel-instance D

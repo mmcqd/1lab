@@ -75,6 +75,17 @@ module _ {o ℓ o' ℓ'} {B : Precategory o ℓ} (E : Displayed B o' ℓ') where
       lifts
         : ∀ {x y} (f : B.Hom x y) (y' : E.Ob[ y ])
         → is-contr (Σ[ x' ∈ E.Ob[ x ] ] E.Hom[ f ] x' y')
+      
+    private
+      _[_] : ∀ {x y} (x' : E.Ob[ x ]) (f : B.Hom y x) → E.Ob[ y ]
+      x' [ f ] = lifts f x' .centre .fst
+
+    hom→path : ∀ {x y} {x' : E.Ob[ x ]} {y' : E.Ob[ y ]} {f : B.Hom x y} → E.Hom[ f ] x' y' → y' [ f ] ≡ x'
+    hom→path f' = ap fst $ lifts _ _ .paths (_ , f')
+
+    path→hom : ∀ {x y} {x' : E.Ob[ x ]} {y' : E.Ob[ y ]} {f : B.Hom x y} → y' [ f ] ≡ x' → E.Hom[ f ] x' y'
+    path→hom {x' = x'} {y'} {f} p = subst (λ z → Hom[ f ] z y') p (lifts f y' .centre .snd)
+
 ```
 
 ## Discrete fibrations are cartesian
@@ -359,3 +370,36 @@ it survives automatically.
     hl x = is-hlevel≃ 1 (Iso→Equiv eqv) $
       ×-is-hlevel 1 (Π-is-hlevel 1 λ _ → is-hlevel-is-prop 2) hlevel!
 ```
+
+```agda
+module _ {o ℓ} (B : Precategory o ℓ) where
+  private
+    module B = Precategory B
+  open B
+  open Discrete-fibration
+  -- Yoneda embedding of elements of B into a discrete fibration
+
+
+  Hom[_,-] : (b : B.Ob) → Displayed B _ _
+  Displayed.Ob[ Hom[ b ,-] ] c = Hom c b
+  Displayed.Hom[ Hom[ b ,-] ] f g h = {!   !}
+  Displayed.Hom[ Hom[ b ,-] ]-set = hlevel!
+  Hom[ b ,-] .Displayed.id' = {!   !}
+  Hom[ b ,-] .Displayed._∘'_  {x = x} {y} {z} {f} {g} p q = 
+    {!   !}
+    -- (f ∘ g) ∘ x   ≡⟨ cat! B ⟩ 
+    -- f ∘ ⌜ g ∘ x ⌝ ≡⟨ ap! q ⟩
+    -- f ∘ y         ≡⟨ p ⟩
+    -- z             ∎
+  Hom[ b ,-] .Displayed.idr' _ = prop!
+  Hom[ b ,-] .Displayed.idl' _ = prop!
+  Hom[ b ,-] .Displayed.assoc' _ _ _ = prop!
+
+  Discr : ∀ {b} → Discrete-fibration Hom[ b ,-]
+  Discr .fibre-set = hlevel!
+  Discr .lifts f g = {!   !}
+  -- foo : (b : B.Ob) → Discrete-fibration (∫ B (よ₀ B b))
+
+
+ 
+``` 

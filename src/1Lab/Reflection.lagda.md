@@ -311,6 +311,28 @@ get-boundary tm = unapply-path tm >>= λ where
 instance
   Has-visibility-Telescope : Has-visibility Telescope
   Has-visibility-Telescope .set-visibility v tel = ×-map₂ (set-visibility v) <$> tel
+
+-- Wait for the "principal argument" of a term, i.e. the (principal
+-- argument of) the first visible argument in the spine of a
+-- definition.
+wait-principal-arg : Term → TC ⊤
+wait-principal-arg topl = go topl where
+  go : Term → TC ⊤
+  go* : List (Arg Term) → TC ⊤
+
+  go mv@(meta m _) = do
+    debugPrint "tactic.hlevel" 30
+      [ "wait-principal-arg: blocking on meta " , termErr mv , " in principal arguments of\n  "
+      , termErr topl
+      ]
+    block-on-meta m
+  go (def d ds) = go* ds
+  go t          = pure tt
+
+  go* (arg (arginfo visible _) t ∷ as)   = go t
+  go* (arg (arginfo instance' _) t ∷ as) = go t
+  go* (_ ∷ as)                         = go* as
+  go* []                               = pure tt
 ```
 
 ## Debugging tools

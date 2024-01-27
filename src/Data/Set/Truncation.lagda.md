@@ -3,6 +3,7 @@
 open import 1Lab.HLevel.Retracts
 open import 1Lab.HLevel.Universe
 open import 1Lab.HIT.Truncation
+open import 1Lab.Reflection.HLevel
 open import 1Lab.HLevel
 open import 1Lab.Equiv
 open import 1Lab.Path
@@ -149,5 +150,26 @@ is-contr→∥-∥₀-is-contr h = is-hlevel≃ 0 ((_ , ∥-∥₀-idempotent (i
 
 is-prop→∥-∥₀-is-prop : ∀ {ℓ} {A : Type ℓ} → is-prop A → is-prop ∥ A ∥₀
 is-prop→∥-∥₀-is-prop h = is-hlevel≃ 1 ((_ , ∥-∥₀-idempotent (is-prop→is-set h)) e⁻¹) h
+
+∥-∥₀-elim! : ∀ {ℓ ℓ'} {A : Type ℓ} {B : ∥ A ∥₀ → Type ℓ'}
+          → {@(tactic hlevel-tactic-worker) bset : ∀ x → is-set (B x)}
+          → (∀ x → B (inc x))
+          → ∀ x → B x
+∥-∥₀-elim! {bset = bset} = ∥-∥₀-elim bset
+
+∥-∥₀-elim!₂ : ∀ {ℓ ℓ' ℓ''} {A : Type ℓ} {B : Type ℓ'} {C : ∥ A ∥₀ → ∥ B ∥₀ → Type ℓ''}
+           → {@(tactic hlevel-tactic-worker) cset : ∀ x y → is-set (C x y)}
+           → (∀ x y → C (inc x) (inc y))
+           → ∀ x y → C x y
+∥-∥₀-elim!₂ {cset = cset} = ∥-∥₀-elim₂ cset
+
+
+∥-∥₀-elim!₃ : ∀ {ℓ ℓ' ℓ'' ℓ'''} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''}
+               {D : ∥ A ∥₀ → ∥ B ∥₀ → ∥ C ∥₀ → Type ℓ'''}
+           → {@(tactic hlevel-tactic-worker) dset : ∀ x y z → is-set (D x y z)}
+           → (∀ x y z → D (inc x) (inc y) (inc z))
+           → ∀ x y z → D x y z
+∥-∥₀-elim!₃ {dset = dset} = ∥-∥₀-elim₃ dset
+
 ```
 -->

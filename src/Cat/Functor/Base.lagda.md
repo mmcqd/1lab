@@ -252,6 +252,9 @@ already coherent enough to ensure that these actions agree:
     → (p : y C.≅ z) → path→iso (ap (F .F₀) (cc .to-path p)) ≡ F-map-iso F p
   ap-F₀-iso cc F p = ap-F₀-to-iso F (cc .to-path p)
                    ∙ ap (F-map-iso F) (Univalent.iso→path→iso cc p)
+  
+  F-map-iso-id : ∀ {x} → (F : Functor C D) → F-map-iso {x = x} F C.id-iso ≡ D.id-iso
+  F-map-iso-id F = D.≅-path (F .F-id)
 ```
 -->
 

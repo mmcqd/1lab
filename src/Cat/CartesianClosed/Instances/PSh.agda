@@ -175,14 +175,14 @@ module _ {o ℓ κ} {C : Precategory o ℓ} where
     coequ .has-is-coeq .unique {F = F} p = Nat-path λ i → funext $
       Coeq-elim-prop (λ _ → F .F₀ _ .is-tr _ _) λ x → p ηₚ i $ₚ x
 
-module _ {κ} {C : Precategory κ κ} where
+module _ {o h κ} {C : Precategory o (o ⊔ h ⊔ κ)} where
   private
     module C = Cat.Reasoning C
-    module PSh = Cat.Reasoning (PSh κ C)
+    module PSh = Cat.Reasoning (PSh (o ⊔ h ⊔ κ) C)
 
-  PSh-closed : Cartesian-closed (PSh κ C) (PSh-products {C = C}) (PSh-terminal {C = C})
-  PSh-closed = cc where
-    cat = PSh κ C
+  PSh-closed : Cartesian-closed (PSh (o ⊔ h ⊔ κ) C) (PSh-products {C = C}) (PSh-terminal {C = C})
+  PSh-closed = cc module PSh-closed where
+    cat = PSh (o ⊔ h ⊔ κ) C
 
     open Binary-products cat (PSh-products {C = C}) public
 
@@ -202,7 +202,7 @@ module _ {κ} {C : Precategory κ κ} where
         F .F-∘ f g = ext λ h i j x →
           ap (h .η i) (Σ-pathp (sym (C.assoc _ _ _)) refl)
 
-      func : Functor (PSh κ C) (PSh κ C)
+      func : Functor (PSh (o ⊔ h ⊔ κ) C) (PSh (o ⊔ h ⊔ κ) C)
       func .F₀ = hom₀
       func .F₁ f .η i g .η j (h , x) = f .η _ (g .η _ (h , x))
       func .F₁ f .η i g .is-natural x y h = funext λ x →
@@ -225,6 +225,6 @@ module _ {κ} {C : Precategory κ κ} where
       adj .zig {A} = ext λ x _ _ → happly (F-id A) _ , refl
       adj .zag {A} = ext λ _ x i f g j → x .η i (C.idr f j , g)
 
-    cc : Cartesian-closed (PSh κ C) (PSh-products {C = C}) (PSh-terminal {C = C})
-    cc = product-adjoint→cartesian-closed (PSh κ C)
+    cc : Cartesian-closed (PSh (o ⊔ h ⊔ κ) C) (PSh-products {C = C}) (PSh-terminal {C = C})
+    cc = product-adjoint→cartesian-closed (PSh (o ⊔ h ⊔ κ) C)
       (PSh-products {C = C}) (PSh-terminal {C = C}) func adj
