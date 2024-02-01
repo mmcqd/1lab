@@ -730,8 +730,23 @@ instance
   decomp-pi : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} → hlevel-decomposition (∀ a → B a)
   decomp-pi = decomp (quote Π-is-hlevel) (`level ∷ `search-under 1 ∷ [])
 
+
+  decomp-impl-pi³
+    : ∀ {ℓa ℓb ℓc ℓd} {A : Type ℓa} {B : A → Type ℓb} {C : ∀ x (y : B x) → Type ℓc}
+    → {D : ∀ x y (z : C x y) → Type ℓd}
+    → hlevel-decomposition (∀ {a b c} → D a b c)
+  decomp-impl-pi³ = decomp (quote Π-is-hlevel³') (`level ∷ `search-under 3 ∷ [])
+
+  decomp-impl-pi² : ∀ {ℓa ℓb ℓc} {A : Type ℓa} {B : A → Type ℓb} {C : ∀ x (y : B x) → Type ℓc}
+    → hlevel-decomposition (∀ {a b} → C a b)
+  decomp-impl-pi² = decomp (quote Π-is-hlevel²') (`level ∷ `search-under 2 ∷ [])
+
+
   decomp-impl-pi : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} → hlevel-decomposition (∀ {a} → B a)
   decomp-impl-pi = decomp (quote Π-is-hlevel') (`level ∷ `search-under 1 ∷ [])
+
+
+
 
   decomp-sigma : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} → hlevel-decomposition (Σ A B)
   decomp-sigma = decomp (quote Σ-is-hlevel) (`level ∷ `search ∷ `search-under 1 ∷ [])

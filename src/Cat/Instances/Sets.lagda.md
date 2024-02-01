@@ -53,7 +53,7 @@ categorical isomorphisms of sets are an [[identity system]].
 
 ```agda
   Sets-is-category : is-category (Sets ℓ)
-  Sets-is-category .to-path i = n-ua (iso→equiv i)
+  Sets-is-category .to-path i = ext (iso→equiv i)
   Sets-is-category .to-path-over p = Sets.≅-pathp refl _ $
     funextP λ a → path→ua-pathp _ refl
 ```

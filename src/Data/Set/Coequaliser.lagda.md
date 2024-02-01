@@ -373,10 +373,8 @@ establish effectivity of the quotient.
     Code x = Quot-elim
       (λ x → n-Type-is-hlevel 1)
       (λ y → el (x ∼ y) (has-is-prop x y) {- 1 -})
-      λ y z r →
-        n-ua (prop-ext (has-is-prop _ _) (has-is-prop _ _)
-          (λ z → z ∙ᶜ r)
-          λ z → z ∙ᶜ (symᶜ r))
+      λ y z r → ext ((λ z → z ∙ᶜ r) , λ z → z ∙ᶜ (symᶜ r))
+
 ```
 
 We do quotient induction into the `type of propositions`{.Agda

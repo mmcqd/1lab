@@ -517,5 +517,12 @@ is-set→cast-pathp
   → PathP (λ i → P (q i)) px py
 is-set→cast-pathp {p = p} {q = q} P {px} {py} set  r =
   coe0→1 (λ i → PathP (λ j → P (set _ _ p q i j)) px py) r
+
+subst-filler-set : ∀ {ℓ ℓ'} {A : Type ℓ} (P : A → Type ℓ')
+                → is-set A
+                → {a : A}
+                → (p : a ≡ a)
+                → ∀ x → subst P p x ≡ x
+subst-filler-set P is-set-A p x = subst (λ q → subst P q x ≡ x) (is-set-A _ _ _ _) (transport-refl x)
 ```
 -->

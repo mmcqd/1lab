@@ -476,6 +476,20 @@ subst : ∀ {ℓ₁ ℓ₂} {A : Type ℓ₁} (P : A → Type ℓ₂) {x y : A}
 subst P p x = transp (λ i → P (p i)) i0 x
 ```
 
+<!--
+```agda
+
+subst₂ : ∀ {ℓ₁ ℓ₂ ℓ₃} {A : Type ℓ₁} {B : Type ℓ₂} (P : A → B → Type ℓ₃) {x₁ y₁ : A} {x₂ y₂ : B}
+        → x₁ ≡ y₁ → x₂ ≡ y₂ → P x₁ x₂ → P y₁ y₂
+subst₂ P p q x = transport (λ i → P (p i) (q i)) x
+
+subst₃ : ∀ {ℓ₁ ℓ₂ ℓ₃ ℓ₄} {A : Type ℓ₁} {B : Type ℓ₂} {C : Type ℓ₃} (P : A → B → C → Type ℓ₄) {x₁ y₁ : A} {x₂ y₂ : B} {x₃ y₃ : C}
+        → x₁ ≡ y₁ → x₂ ≡ y₂ → x₃ ≡ y₃ → P x₁ x₂ x₃ → P y₁ y₂ y₃
+subst₃ P p q r x = transport (λ i → P (p i) (q i) (r i)) x
+
+```
+-->
+
 ### Computation
 
 In “Book HoTT”, `transport`{.Agda} is defined using path induction, and

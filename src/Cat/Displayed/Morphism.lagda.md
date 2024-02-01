@@ -25,6 +25,10 @@ private variable
   a b c d : Ob
   f : Hom a b
   a' b' c' : Ob[ a ]
+
+Hom↓ : Ob[ a ] → Ob[ a ] → Type _
+Hom↓ x y = Hom[ id ] x y
+
 ```
 -->
 
@@ -212,11 +216,11 @@ morphism; these are known as "vertical sections".
 
 ```agda
 _section-of↓_
-  : ∀ {x} {x' x'' : Ob[ x ]} (s' : Hom[ id ] x'' x') → (r : Hom[ id ] x' x'')
+  : ∀ {x} {x' x'' : Ob[ x ]} (s' : Hom↓ x'' x') → (r : Hom↓ x' x'')
   → Type _
 s' section-of↓ r' = s' section-of[ idl id ] r'
 
-has-section↓ : ∀ {x} {x' x'' : Ob[ x ]} (r' : Hom[ id ] x' x'') → Type _
+has-section↓ : ∀ {x} {x' x'' : Ob[ x ]} (r' : Hom↓ x' x'') → Type _
 has-section↓ r' = has-section[ id-has-section ] r'
 ```
 
@@ -248,11 +252,11 @@ We also define vertical retracts in a similar manner as before.
 
 ```agda
 _retract-of↓_
-  : ∀ {x} {x' x'' : Ob[ x ]} (r' : Hom[ id ] x' x'') → (s : Hom[ id ] x'' x')
+  : ∀ {x} {x' x'' : Ob[ x ]} (r' : Hom↓ x' x'') → (s : Hom↓ x'' x')
   → Type _
 r' retract-of↓ s' = r' retract-of[ idl id ] s'
 
-has-retract↓ : ∀ {x} {x' x'' : Ob[ x ]} (s' : Hom[ id ] x'' x') → Type _
+has-retract↓ : ∀ {x} {x' x'' : Ob[ x ]} (s' : Hom↓ x'' x') → Type _
 has-retract↓ s' = has-retract[ id-has-retract ] s'
 ```
 
@@ -311,12 +315,12 @@ isomorphisms_.
 _≅↓_ : {x : Ob} (A B : Ob[ x ]) → Type ℓ'
 _≅↓_ = _≅[ id-iso ]_
 
-is-invertible↓ : {x : Ob} {x' x'' : Ob[ x ]} → Hom[ id ] x' x'' → Type _
+is-invertible↓ : {x : Ob} {x' x'' : Ob[ x ]} → Hom↓ x' x'' → Type _
 is-invertible↓ = is-invertible[ id-invertible ]
 
 make-invertible↓
-  : ∀ {x} {x' x'' : Ob[ x ]} {f' : Hom[ id ] x' x''}
-  → (g' : Hom[ id ] x'' x')
+  : ∀ {x} {x' x'' : Ob[ x ]} {f' : Hom↓ x' x''}
+  → (g' : Hom↓ x'' x')
   → f' ∘' g' ≡[ idl _ ] id'
   → g' ∘' f' ≡[ idl _ ] id'
   → is-invertible↓ f'
@@ -381,7 +385,7 @@ make-iso[ inv ] f' g' p q .inverses' .Inverses[_].invr' = q
 
 make-vertical-iso
   : ∀ {x} {x' x'' : Ob[ x ]}
-  → (f' : Hom[ id ] x' x'') (g' : Hom[ id ] x'' x')
+  → (f' : Hom↓ x' x'') (g' : Hom↓ x'' x')
   → f' ∘' g' ≡[ idl _ ] id'
   → g' ∘' f' ≡[ idl _ ] id'
   → x' ≅↓ x''

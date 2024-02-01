@@ -314,6 +314,13 @@ identity-system→hlevel
 identity-system→hlevel zero ids hl x y = ids .to-path (hl _ _ .centre)
 identity-system→hlevel (suc n) ids hl x y =
   is-hlevel≃ (suc n) (identity-system-gives-path ids e⁻¹) (hl x y)
+
+open import 1Lab.HLevel.Universe
+
+n-univalence-identity-system : ∀ {ℓ n} → is-identity-system {A = n-Type ℓ n} (λ A B → ∣ A ∣ ≃ ∣ B ∣) λ _ → id≃
+n-univalence-identity-system .to-path = n-ua
+n-univalence-identity-system .to-path-over p = Σ-prop-pathp (λ _ → is-equiv-is-prop) $ funextP $ λ a → path→ua-pathp p refl
+
 ```
 -->
 

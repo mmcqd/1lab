@@ -1,6 +1,7 @@
 <!--
 ```agda
 open import 1Lab.HLevel
+open import 1Lab.HLevel.Retracts
 open import 1Lab.Path
 open import 1Lab.Type hiding (id ; _∘_)
 
@@ -95,6 +96,10 @@ over the equalities in the base.
     assoc' : ∀ {a b c d w x y z} {f : Hom c d} {g : Hom b c} {h : Hom a b}
            → (f' : Hom[ f ] y z) → (g' : Hom[ g ] x y) → (h' : Hom[ h ] w x)
            → f' ∘' (g' ∘' h') ≡[ assoc f g h ] ((f' ∘' g') ∘' h')
+
+  instance
+    H-Level-Hom[] : ∀ {a b} {f : Hom a b} {x : Ob[ a ]} {y : Ob[ b ]} {n} → H-Level (Hom[ f ] x y) (2 + n)
+    H-Level-Hom[] = basic-instance 2 (Hom[ _ ]-set _ _)
 ```
 
 For convenience, we also introduce displayed analogues for equational chain reasoning:
@@ -132,3 +137,4 @@ For convenience, we also introduce displayed analogues for equational chain reas
   infixr 30 _∙[]_ ∙[-]-syntax
   infixr 2 ≡[]⟨⟩-syntax ≡[-]⟨⟩-syntax _≡[]˘⟨_⟩_
 ```
+ 

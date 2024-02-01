@@ -282,3 +282,4 @@ module _ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} (f : A → B) where
     Ω-corestriction-is-surjective (b , p) = □-rec! (λ (a , p) → inc (a , Σ-prop-path! p)) p
 ```
 -->
+ 

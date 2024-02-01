@@ -176,7 +176,7 @@ algebra, so we omit the proof.
 ```agda
     isom .rinv x =
       Functor-path
-        (λ i → n-ua (Fibre-equiv (λ a → ∣ x .F₀ (elem (i .ob) a) ∣) (i .section)))
+        (λ i → ext (Fibre-equiv (λ a → ∣ x .F₀ (elem (i .ob) a) ∣) (i .section)))
         λ f → ua→ λ { ((a , b) , p) → path→ua-pathp _ (lemma x _ ∙ lemma' _ _ _) }
       where abstract
         lemma'
@@ -194,7 +194,7 @@ algebra, so we omit the proof.
 
     isom .linv x =
       /-Obj-path
-        (Functor-path (λ x → n-ua (Total-equiv _ e⁻¹))
+        (Functor-path (λ x → ext (Total-equiv _ e⁻¹))
           λ f → ua→ λ a → path→ua-pathp _ refl)
         (Nat-pathp _ _ (λ x → ua→ (λ x → sym (x .snd .snd))))
 

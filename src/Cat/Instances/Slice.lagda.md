@@ -589,7 +589,7 @@ _isomorphic_ to $p$ in $\Sets/I$, it's actually _identical_ to $p$!
     functor .F-∘ f g = funext (subst-∙ (fibre (fam .map)) _ _)
 
     path : Total-space .F₀ functor ≡ fam
-    path = /-Obj-path (n-ua (Total-equiv _  e⁻¹)) (ua→ λ a → sym (a .snd .snd))
+    path = /-Obj-path (ext (Total-equiv _  e⁻¹)) (ua→ λ a → sym (a .snd .snd))
 ```
 
 # Slices preserve univalence
@@ -704,3 +704,4 @@ the fibre over $h$ would correspondingly be isomorphic to $A \times \top
       (idr _))
     where open Pullback (pb (constant-family .F₀ A .map) h)
 ```
+ 

@@ -4,12 +4,15 @@ open import 1Lab.Function.Embedding
 open import 1Lab.Reflection.HLevel
 open import 1Lab.Reflection.Subst
 open import 1Lab.HLevel.Retracts
+open import 1Lab.HLevel.Universe
 open import 1Lab.Reflection
 open import 1Lab.Type.Sigma
 open import 1Lab.Type.Pi
 open import 1Lab.HLevel
 open import 1Lab.Equiv
 open import 1Lab.Path
+open import 1Lab.Univalence
+open import 1Lab.Resizing
 open import 1Lab.Type
 
 open import Data.Nat.Base
@@ -188,6 +191,34 @@ Extensional-× ⦃ sa ⦄ ⦃ sb ⦄ .idsᵉ .to-path-over (p , q) = Σ-pathp
   (sa .idsᵉ .to-path-over p)
   (sb .idsᵉ .to-path-over q)
 
+Extensional-Type : ∀ {ℓ} → Extensional (Type ℓ) ℓ
+Extensional-Type .Pathᵉ A B = A ≃ B
+Extensional-Type .reflᵉ A = id≃
+Extensional-Type .idsᵉ = univalence-identity-system
+
+Extensional-Ω : Extensional Ω lzero
+Extensional-Ω .Pathᵉ A B = (∣ A ∣ → ∣ B ∣) × (∣ B ∣ → ∣ A ∣)
+Extensional-Ω .reflᵉ A = id , id
+Extensional-Ω .idsᵉ .to-path (f , g) = Ω-ua f g
+Extensional-Ω .idsᵉ .to-path-over (f , g) = Σ-prop-pathp hlevel! $ funextP λ a → path→ua-pathp (prop-ext! f g) refl
+
+Extensional-contr : ∀ {ℓ} → Extensional (n-Type ℓ 0) ℓ
+Extensional-contr .Pathᵉ _ _ = Lift _ ⊤
+Extensional-contr .reflᵉ _ = lift tt
+Extensional-contr .idsᵉ .to-path _ = n-ua (is-contr→≃ hlevel! hlevel!)
+Extensional-contr .idsᵉ .to-path-over _ = refl
+
+Extensional-prop : ∀ {ℓ} → Extensional (n-Type ℓ 1) ℓ
+Extensional-prop .Pathᵉ P Q = (∣ P ∣ → ∣ Q ∣) × (∣ Q ∣ → ∣ P ∣)
+Extensional-prop .reflᵉ A = id , id
+Extensional-prop .idsᵉ .to-path (f , g) = n-ua (prop-ext! f g)
+Extensional-prop .idsᵉ .to-path-over (f , g) = Σ-prop-pathp hlevel! $ funextP λ a → path→ua-pathp (prop-ext! f g) refl
+
+Extensional-nType : ∀ {ℓ n} → Extensional (n-Type ℓ (2 + n)) ℓ
+Extensional-nType .Pathᵉ A B = ∣ A ∣ ≃ ∣ B ∣
+Extensional-nType .reflᵉ A = id≃
+Extensional-nType .idsᵉ = n-univalence-identity-system
+
 instance
   extensionality-fun
     : ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'}
@@ -214,6 +245,20 @@ instance
     → Extensionality (A × B)
   extensionality-× = record { lemma = quote Extensional-× }
 
+  extensionality-Type : ∀ {ℓ} → Extensionality (Type ℓ)
+  extensionality-Type = record { lemma = quote Extensional-Type }
+
+  extensionality-Ω : Extensionality Ω
+  extensionality-Ω = record { lemma = quote Extensional-Ω }
+
+  extensionality-contr : ∀ {ℓ} → Extensionality (n-Type ℓ 0)
+  extensionality-contr = record { lemma = quote Extensional-contr }
+
+  extensionality-prop : ∀ {ℓ} → Extensionality (n-Type ℓ 1)
+  extensionality-prop = record { lemma = quote Extensional-prop }
+  
+  extensionality-nType : ∀ {ℓ n} → Extensionality (n-Type ℓ n)
+  extensionality-nType = record { lemma = quote Extensional-nType }
 {-
 Actual user-facing entry point for the tactic: using the 'extensional'
 tactic (through the blanket instance) we can find an identity system for

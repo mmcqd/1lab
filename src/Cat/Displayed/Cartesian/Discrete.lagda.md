@@ -76,9 +76,12 @@ module _ {o ℓ o' ℓ'} {B : Precategory o ℓ} (E : Displayed B o' ℓ') where
         : ∀ {x y} (f : B.Hom x y) (y' : E.Ob[ y ])
         → is-contr (Σ[ x' ∈ E.Ob[ x ] ] E.Hom[ f ] x' y')
       
-    private
-      _[_] : ∀ {x y} (x' : E.Ob[ x ]) (f : B.Hom y x) → E.Ob[ y ]
-      x' [ f ] = lifts f x' .centre .fst
+    instance
+      H-Level-Ob[] : ∀ {x n} → H-Level (E.Ob[ x ]) (2 + n)
+      H-Level-Ob[] = basic-instance 2 (fibre-set _)
+
+    _[_] : ∀ {x y} (x' : E.Ob[ x ]) (f : B.Hom y x) → E.Ob[ y ]
+    x' [ f ] = lifts f x' .centre .fst
 
     hom→path : ∀ {x y} {x' : E.Ob[ x ]} {y' : E.Ob[ y ]} {f : B.Hom x y} → E.Hom[ f ] x' y' → y' [ f ] ≡ x'
     hom→path f' = ap fst $ lifts _ _ .paths (_ , f')
@@ -86,6 +89,15 @@ module _ {o ℓ o' ℓ'} {B : Precategory o ℓ} (E : Displayed B o' ℓ') where
     path→hom : ∀ {x y} {x' : E.Ob[ x ]} {y' : E.Ob[ y ]} {f : B.Hom x y} → y' [ f ] ≡ x' → E.Hom[ f ] x' y'
     path→hom {x' = x'} {y'} {f} p = subst (λ z → Hom[ f ] z y') p (lifts f y' .centre .snd)
 
+    path≃hom : ∀ {x y} {f : B.Hom x y} {x' : E.Ob[ x ]} {y' : E.Ob[ y ]} →  E.Hom[ f ] x' y' ≃ (y' [ f ] ≡ x')
+    path≃hom {f = f} {x'} {y'} = Iso→Equiv $ hom→path , iso 
+      path→hom 
+      (λ f' → prop!) 
+      (λ p → from-pathp {A = λ i → Hom[ f ] (fst (lifts f y' .paths (x' , p) i)) y'} (ap snd $ lifts f y' .paths _))
+  
+    instance
+      H-Level-Hom[]-disc : ∀ {x y} {f : B.Hom x y} {x' : E.Ob[ x ]} {y' : E.Ob[ y ]} {n} → H-Level (E.Hom[ f ] x' y') (1 + n)
+      H-Level-Hom[]-disc = prop-instance (is-hlevel≃ 1 path≃hom hlevel!)
 ```
 
 ## Discrete fibrations are cartesian
@@ -226,6 +238,8 @@ a presheaf from a discrete fibration.
 module _ {o ℓ} (B : Precategory o ℓ)  where
   private
     module B = Precategory B
+    open _=>_
+    open Vertical-functor
 ```
 -->
 
@@ -371,35 +385,15 @@ it survives automatically.
       ×-is-hlevel 1 (Π-is-hlevel 1 λ _ → is-hlevel-is-prop 2) hlevel!
 ```
 
+We can also show that a natural trasformation of presheaves gives rise to a vertical functor between
+discrete fibrations
+
 ```agda
-module _ {o ℓ} (B : Precategory o ℓ) where
-  private
-    module B = Precategory B
-  open B
   open Discrete-fibration
-  -- Yoneda embedding of elements of B into a discrete fibration
 
-
-  Hom[_,-] : (b : B.Ob) → Displayed B _ _
-  Displayed.Ob[ Hom[ b ,-] ] c = Hom c b
-  Displayed.Hom[ Hom[ b ,-] ] f g h = {!   !}
-  Displayed.Hom[ Hom[ b ,-] ]-set = hlevel!
-  Hom[ b ,-] .Displayed.id' = {!   !}
-  Hom[ b ,-] .Displayed._∘'_  {x = x} {y} {z} {f} {g} p q = 
-    {!   !}
-    -- (f ∘ g) ∘ x   ≡⟨ cat! B ⟩ 
-    -- f ∘ ⌜ g ∘ x ⌝ ≡⟨ ap! q ⟩
-    -- f ∘ y         ≡⟨ p ⟩
-    -- z             ∎
-  Hom[ b ,-] .Displayed.idr' _ = prop!
-  Hom[ b ,-] .Displayed.idl' _ = prop!
-  Hom[ b ,-] .Displayed.assoc' _ _ _ = prop!
-
-  Discr : ∀ {b} → Discrete-fibration Hom[ b ,-]
-  Discr .fibre-set = hlevel!
-  Discr .lifts f g = {!   !}
-  -- foo : (b : B.Ob) → Discrete-fibration (∫ B (よ₀ B b))
-
-
- 
-``` 
+  nat→vertical : ∀ {κ} {F G : Functor (B ^op) (Sets κ)} → (F => G) → Vertical-functor ((presheaf→discrete F) .fst) ((presheaf→discrete G) .fst)
+  nat→vertical α .F₀' = α .η _
+  nat→vertical α .F₁' p = sym (α .is-natural _ _ _ #ₚ _) ∙ ap (α .η _) p
+  nat→vertical α .F-id' = prop!
+  nat→vertical α .F-∘' = prop!
+```    

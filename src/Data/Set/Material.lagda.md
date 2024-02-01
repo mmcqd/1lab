@@ -1,7 +1,7 @@
 <!--
 ```agda
 {-# OPTIONS --lossy-unification #-}
-open import 1Lab.Prelude hiding (ext)
+open import 1Lab.Prelude renaming (ext to ext!)
 
 open import Data.Sum.Base
 open import Data.Image
@@ -112,7 +112,7 @@ extensionality constructor.
 is-member : ∀ {ℓ} → V ℓ → V ℓ → Prop (lsuc ℓ)
 is-member e (set A f) = el ∥ fibre f e ∥ squash
 is-member e (ext {A} {B} f g p q i) =
-  n-ua {X = el _ squash} {Y = el _ squash} (prop-ext squash squash from to) i where
+  ext! {x = el _ squash} {y = el _ squash} (from , to) i where
 ```
 
 The extensionality constructor requires that we show a logical

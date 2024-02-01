@@ -178,7 +178,7 @@ record is-equational {ℓ o' ℓ'} {S : Type ℓ → Type o'} (spec : Thin-struc
     → is-equiv (f #_)
     → a ≡ b
   ∫-Path {a = a} {b = b} f eqv =
-    Σ-pathp (n-ua (f .hom , eqv)) $
+    Σ-pathp (ext (f .hom , eqv)) $
       EquivJ (λ B e → ∀ st → ∣ spec .is-hom (e .fst) (a .snd) st ∣ → PathP (λ i → S (ua e i)) (a .snd) st)
         (λ st pres → to-pathp (ap (λ e → subst S e (a .snd)) ua-id-equiv
                   ·· transport-refl _
