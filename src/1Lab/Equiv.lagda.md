@@ -735,6 +735,9 @@ module Equiv {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} (f : A ≃ B) where
   injective : ∀ {x y} → to x ≡ to y → x ≡ y
   injective p = ap fst $ is-contr→is-prop (f .snd .is-eqv _) (_ , refl) (_ , sym p)
 
+  injective⁻ : ∀ {x y} → from x ≡ from y → x ≡ y
+  injective⁻ p = ap fst $ is-contr→is-prop ((f e⁻¹) .snd .is-eqv _) (_ , refl) (_ , sym p)
+
   injective₂ : ∀ {x y z} → to x ≡ z → to y ≡ z → x ≡ y
   injective₂ p q = ap fst $ is-contr→is-prop (f .snd .is-eqv _)
     (_ , p) (_ , q)

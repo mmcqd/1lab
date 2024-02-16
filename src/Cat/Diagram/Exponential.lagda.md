@@ -59,7 +59,7 @@ record is-exponential (B^A : Ob) (ev : Hom (B^A ⊗₀ A) B) : Type (o ⊔ ℓ) 
   no-eta-equality
   field
     ƛ        : ∀ {Γ} (m : Hom (Γ ⊗₀ A) B) → Hom Γ B^A
-    commutes : ∀ {Γ} (m : Hom (Γ ⊗₀ A) B) → ev ∘ ƛ m ⊗₁ id ≡ m
+    commutes : ∀ {Γ} (m : Hom (Γ ⊗₀ A) B) → ev ∘ (ƛ m) ⊗₁ id ≡ m
     unique   : ∀ {Γ} {m : Hom (Γ ⊗₀ _) _} m'
              → ev ∘ m' ⊗₁ id ≡ m
              → m' ≡ ƛ m
@@ -115,6 +115,13 @@ and that this indeed interprets the $\beta$-reduction rule:
     beta : ∀ {Γ} (f : Hom (Γ ⊗₀ A) B) (x : Hom Γ A)
          → app (ƛ f) x ≡ f ∘ ⟨ id , x ⟩
     beta f x = pulll (commutes _)
+
+  subst-comm : ∀ {Γ Δ} (s : Hom Δ Γ) (m : Hom (Γ ⊗₀ A) B) → (ƛ m) ∘ s ≡ ƛ (m ∘ (s ⊗₁ id))
+  subst-comm s m = unique _ $ 
+    ev ∘ (ƛ m ∘ s) ⊗₁ ⌜ id ⌝ ≡˘⟨ ap¡ (idl _) ⟩
+    ev ∘ ⌜ (ƛ m ∘ s) ⊗₁ (id ∘ id) ⌝ ≡⟨ ap! (×-functor .F-∘ _ _) ⟩ 
+    ev ∘ ((ƛ m) ⊗₁ id) ∘ (s ⊗₁ id) ≡⟨ pulll (commutes _) ⟩
+    m ∘ (s ⊗₁ id) ∎
 ```
 
 <!--
@@ -473,3 +480,4 @@ $\Delta_B \dashv \Pi_B$ we've been chasing.
      g .map ∘ (ev ∘ (pb _ _ .p₁ ∘ x) ⊗₁ id) ∘ b.₁ h .map        ≡⟨ ap₂ _∘_ refl (ap₂ _∘_ (sym (rem₁-β _ _)) refl) ⟩
      g .map ∘ rem₁ _ .fst x .map ∘ b.₁ h .map                   ∎
 ```
+  

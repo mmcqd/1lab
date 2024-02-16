@@ -2,12 +2,14 @@
 -- {-# OPTIONS --show-implicit #-}
 open import Cat.Prelude hiding (⟪_⟫)
 open import Cat.Diagram.Terminal
+open import Cat.Diagram.Product
 open import Cat.Semantics.NaturalModel
 open import Cat.Functor.Naturality
 open import Cat.Functor.Base
 open import Cat.Functor.Hom.Representable
 open import Data.Dec.Base
-open import 1Lab.Reflection.Induction
+open import Cat.Functor.Hom
+open import Cat.CartesianClosed.Instances.PSh
 
 import Cat.Reasoning
 
@@ -91,59 +93,60 @@ data _∋_ : Ctx → Tp → Type where
 data _⊢_  : Ctx → Tp → Type 
 data Sub  : Ctx → Ctx → Type
 
+variable
+  γ δ σ : Sub Γ Δ
+  x y : Δ ⊢ A
+  f : Δ ⊢ A `→ B
+  e : Δ ⨾ A ⊢ B
+
 _!⨾_ : Sub Γ Δ → Γ ⊢ A → Sub Γ (Δ ⨾ A)
 !idₛ : Sub Γ Γ
 _!∘ₛ_ : Sub Δ Ξ → Sub Γ Δ → Sub Γ Ξ
--- wkₛ : Sub Γ Δ → Sub (Γ ⨾ A) (Δ ⨾ A)
+!πₛ : Sub Δ (Γ ⨾ A) → Sub Δ Γ
 
 data _⊢_  where
-  `var : Γ ∋ A → Γ ⊢ A
+  `πₜ : Sub Γ (Δ ⨾ A) → Γ ⊢ A
   `tt : Γ ⊢ `⊤
   `⟨_,_⟩ : Γ ⊢ A → Γ ⊢ B → Γ ⊢ A `× B
   `π₁ : Γ ⊢ A `× B → Γ ⊢ A
   `π₂ : Γ ⊢ A `× B → Γ ⊢ B
   `λ : Γ ⨾ A ⊢ B → Γ ⊢ A `→ B
-  _`$_ : Γ ⊢ A `→ B → Γ ⊢ A → Γ ⊢ B  
+  `ν : Γ ⊢ A `→ B → Γ ⨾ A ⊢ B  
   _[_] : Γ ⊢ A → Sub Δ Γ → Δ ⊢ A
-  [id] : (x : Γ ⊢ A) → x [ !idₛ ] ≡ x
-  [∘] : (γ : Sub Δ Ξ) (σ : Sub Γ Δ) (x : Ξ ⊢ A) → x [ γ !∘ₛ σ ] ≡ (x [ γ ]) [ σ ]
-  -- `var-∘ : (γ : Sub Δ (Ξ ⨾ A)) (σ : Sub Γ Δ) → `var γ [ σ ] ≡ `var (γ !∘ₛ σ)
-  [stop] : (γ : Sub Γ Δ) (x : Γ ⊢ A) → `var stop [ γ !⨾ x ] ≡ x
-  [pop] : (γ : Sub Γ Δ) (x : Γ ⊢ A) (n : Δ ∋ B) → `var (pop n) [ γ !⨾ x ] ≡ `var n [ γ ]
-  [`π₁] : (γ : Sub Γ Δ) (x : Δ ⊢ A `× B) → (`π₁ x) [ γ ] ≡ `π₁ (x [ γ ])
-  [`π₂] : (γ : Sub Γ Δ) (x : Δ ⊢ A `× B) → (`π₂ x) [ γ ] ≡ `π₂ (x [ γ ])
-  -- `νβ : (f : Δ ⨾ A ⊢ B) → `ν (`λ f) ≡ f
-  -- [`ν] : (γ : Sub Γ Δ) (σ : Sub Ξ Γ) (f : Δ ⊢ A `→ B) (x : Ξ ⊢ A) → `ν f [ (γ !∘ₛ σ) !⨾ x ] ≡ `ν (f [ γ ]) [ σ !⨾ x ]
-  `π₁β : (x : Δ ⊢ A) (y : Δ ⊢ B) → `π₁ `⟨ x , y ⟩ ≡ x 
-  `π₂β : (x : Δ ⊢ A) (y : Δ ⊢ B) → `π₂ `⟨ x , y ⟩ ≡ y
-  `×-η : (x : Γ ⊢ A `× B) → `⟨ `π₁ x , `π₂ x ⟩ ≡ x
-  `⊤-η : (x : Γ ⊢ `⊤) → `tt ≡ x
-  -- `→-η : (f : Δ ⊢ A `→ B) → `λ (`ν f) ≡ f
+  [id] : x [ !idₛ ] ≡ x
+  [∘] : x [ γ !∘ₛ δ ] ≡ (x [ γ ]) [ δ ]
+  `πₜ-β : `πₜ (γ !⨾ x) ≡ x
+  [`πₜ] : (`πₜ σ [ γ ]) ≡ `πₜ (σ !∘ₛ γ)
+  `ν-β : `ν (`λ e) ≡ e
+  [`π₁] : (`π₁ x) [ γ ] ≡ `π₁ (x [ γ ])
+  [`π₂] : (`π₂ x) [ γ ] ≡ `π₂ (x [ γ ])
+  [`λ] : (`λ e) [ γ ] ≡ `λ (e [ (γ !∘ₛ !πₛ !idₛ) !⨾ (`πₜ !idₛ) ])
+  `π₁-β : `π₁ `⟨ x , y ⟩ ≡ x 
+  `π₂-β : `π₂ `⟨ x , y ⟩ ≡ y
+  `×-η : `⟨ `π₁ x , `π₂ x ⟩ ≡ x
+  `⊤-η : `tt ≡ x
+  `→-η : `λ (`ν f) ≡ f
   trunc : is-set (Γ ⊢ A)
 
 data Sub where
   ∅ : Sub Γ ∅
   idₛ : Sub Γ Γ 
   _⨾_ : Sub Γ Δ → Γ ⊢ A → Sub Γ (Δ ⨾ A)
-  π : Sub Δ (Γ ⨾ A) →  Sub Δ Γ
+  πₛ : Sub Δ (Γ ⨾ A) →  Sub Δ Γ
   _∘ₛ_ : Sub Δ Ξ → Sub Γ Δ → Sub Γ Ξ
-  idrₛ : (f : Sub Γ Δ) → (f ∘ₛ idₛ) ≡ f
-  idlₛ : (f : Sub Γ Δ) → (idₛ ∘ₛ f) ≡ f
-  assocₛ : (f : Sub Ξ Θ) (g : Sub Δ Ξ) (h : Sub Γ Δ) → (f ∘ₛ (g ∘ₛ h)) ≡ ((f ∘ₛ g) ∘ₛ h)
-  π-∘ : (γ : Sub Γ Δ) (σ : Sub Δ (Ξ ⨾ A)) → π σ ∘ₛ γ ≡ π (σ ∘ₛ γ)
-  π-⨾ : (γ : Sub Γ Δ) (x : Γ ⊢ A) → π (γ ⨾ x) ≡ γ
-  ηₛ : (γ : Sub Γ (Δ ⨾ A)) → π γ ⨾ (`var stop [ γ ]) ≡ γ
-  η-∅ : (γ : Sub Γ ∅) → ∅ ≡ γ
-  ⨾-∘ : (γ : Sub Γ Δ) (σ : Sub Ξ Γ) (x : Γ ⊢ A) → ((γ ⨾ x) ∘ₛ σ) ≡ (γ ∘ₛ σ) ⨾ (x [ σ ]) 
+  idrₛ : (γ ∘ₛ idₛ) ≡ γ
+  idlₛ : (idₛ ∘ₛ γ) ≡ γ
+  assocₛ : (γ ∘ₛ (δ ∘ₛ σ)) ≡ ((γ ∘ₛ δ) ∘ₛ σ)
+  πₛ-β : πₛ (γ ⨾ x) ≡ γ
+  ηₛ : πₛ γ ⨾ `πₜ γ ≡ γ
+  πₛ-∘ : (πₛ σ ∘ₛ γ) ≡ πₛ (σ ∘ₛ γ)
+  ∅-η : ∅ ≡ γ
   trunc : is-set (Sub Γ Δ)
 
 !idₛ = idₛ
 _!∘ₛ_ = _∘ₛ_
 _!⨾_ = _⨾_
-
-
--- unquoteDecl Tm-elim = make-elim-n 2 Tm-elim (quote _⊢_)
--- unquoteDecl Sub-elim = make-elim-n 2 Sub-elim (quote Sub)
+!πₛ = πₛ
 
 
 Syntactic : Precategory _ _
@@ -152,39 +155,37 @@ Syntactic .Hom = Sub
 Syntactic .Hom-set Γ Δ = trunc
 Syntactic .id = idₛ
 Syntactic ._∘_ = _∘ₛ_
-Syntactic .idr = idrₛ
-Syntactic .idl = idlₛ
-Syntactic .assoc = assocₛ
+Syntactic .idr _ = idrₛ
+Syntactic .idl _ = idlₛ
+Syntactic .assoc _ _ _ = assocₛ
 
-module Syn = Cat.Reasoning Syntactic
-module Meta = Cat.Reasoning Cat[ Syntactic ^op , Sets lzero ]
+private
+  module Syn = Cat.Reasoning Syntactic
+  module Meta = Cat.Reasoning Cat[ Syntactic ^op , Sets lzero ]
 open Meta.Inverses
 open PSh-reasoning Syntactic
 
 Tm : Tp → Meta.Ob
 Tm A .F₀ Γ = el (Γ ⊢ A) trunc
 Tm A .F₁ γ e = e [ γ ]
-Tm A .F-id = ext [id]
-Tm A .F-∘ f g = ext ([∘] g f)
+Tm A .F-id = ext λ _ → [id]
+Tm A .F-∘ f g = ext λ _ → [∘]
 
-module Tm A = Functor (Tm A)
-
--- I think means we have lifts??
-⊢⟪_⟫ : Γ ⊢ A → ⟪ Γ ⟫ => Tm A
-⊢⟪ f ⟫ = NT (λ Δ γ → f [ γ ]) λ Δ Ξ δ → ext λ δ → Tm.F-∘ _ _ _ #ₚ f
-
-⟪_⟫⊢ : ⟪ Γ ⟫ => Tm A → Γ ⊢ A
-⟪ φ ⟫⊢ = φ .η _ idₛ
-
+private
+  module Tm A = Functor (Tm A)
+  module Y {A} = Yoneda Syntactic (Tm A)
 
 ⨾-sem : ∀ {Γ A} → ⟪ Γ ⨾ A ⟫ Meta.≅ ⟪ Γ ⟫ ⟪×⟫ Tm A
 ⨾-sem = to-natural-iso ni where
   ni : make-natural-iso _ _
-  ni .eta Δ γ = π γ , ((`var stop) [ γ ])
+  ni .eta Δ γ = πₛ γ , `πₜ γ
   ni .inv Δ (γ , e) = γ ⨾ e
-  ni .eta∘inv Δ = ext λ γ x → π-⨾ _ _ , [stop] _ _
-  ni .inv∘eta Δ = ext λ γ → ηₛ _
-  ni .natural Δ Ξ γ = ext λ σ → π-∘ _ _ , sym ([∘] _ _ _)
+  ni .eta∘inv Δ = ext λ γ x → πₛ-β , `πₜ-β
+  ni .inv∘eta Δ = ext λ γ → ηₛ
+  ni .natural Δ Ξ γ = ext λ σ → πₛ-∘ , [`πₜ]
+  
+module ⨾-sem {Γ A} = Meta._≅_ (⨾-sem {Γ} {A})
+
 
 `⊤-sem : Tm `⊤ Meta.≅ ⟪⊤⟫
 `⊤-sem = to-natural-iso ni where
@@ -192,7 +193,7 @@ module Tm A = Functor (Tm A)
   ni .eta _ _ = lift tt
   ni .inv _ _ = `tt
   ni .eta∘inv _ = refl
-  ni .inv∘eta _ = ext `⊤-η
+  ni .inv∘eta _ = ext λ _ → `⊤-η
   ni .natural _ _ _ = refl
 
 `×-sem : ∀ {A B} → Tm (A `× B) Meta.≅ Tm A ⟪×⟫ Tm B
@@ -200,52 +201,67 @@ module Tm A = Functor (Tm A)
   ni : make-natural-iso _ _
   ni .eta Δ x = `π₁ x , `π₂ x
   ni .inv Δ (x , y) = `⟨ x , y ⟩
-  ni .eta∘inv Δ = ext λ x y → `π₁β _ _ , `π₂β _ _
-  ni .inv∘eta Δ = ext λ x → `×-η _
-  ni .natural Δ Γ γ = ext λ x → [`π₁] _ _ , [`π₂] _ _
+  ni .eta∘inv Δ = ext λ x y → `π₁-β , `π₂-β
+  ni .inv∘eta Δ = ext λ x → `×-η
+  ni .natural Δ Γ γ = ext λ x → [`π₁] , [`π₂]
 
 `→-sem : ∀ {A B} → Tm (A `→ B) Meta.≅ Tm A ⟪→⟫ Tm B
-`→-sem {A = A} = to-natural-iso ni where
+`→-sem {A = A} {B = B} = Meta._Iso⁻¹ (to-natural-iso ni) where
   ni : make-natural-iso _ _
-  ni .eta = {!   !}
-  ni .inv = {!   !}
-  ni .eta∘inv = {!   !}
-  ni .inv∘eta = {!   !}
-  ni .natural = {!   !}
-  -- ni .eta Δ f = ⊢⟪ `ν f ⟫ ∘nt ⨾-sem .Meta.from
-  -- ni .inv Δ φ = `λ ⟪ φ ∘nt ⨾-sem .Meta.to ⟫⊢
-  -- ni .eta∘inv Δ = ext λ φ Γ γ x →
-  --   ⌜ `ν (`λ (φ .η (Δ ⨾ A) (π idₛ , `var idₛ))) ⌝ [ γ ⨾ x ] ≡⟨ ap! (`νβ _) ⟩
-  --   φ .η (Δ ⨾ A) (π idₛ , `var idₛ) [ γ ⨾ x ]               ≡˘⟨ φ .is-natural _ _ (γ ⨾ x) #ₚ (π idₛ , `var idₛ) ⟩
-  --   φ .η Γ ⌜ π idₛ ∘ₛ (γ ⨾ x) , `var idₛ [ γ ⨾ x ] ⌝        ≡⟨ ap! (ext (π-∘ _ _ , `var-∘ _ _)) ⟩
-  --   φ .η Γ (π ⌜ idₛ ∘ₛ (γ ⨾ x) ⌝ , `var ⌜ idₛ ∘ₛ (γ ⨾ x) ⌝) ≡⟨ ap! (idlₛ _) ⟩
-  --   φ .η Γ ⌜ π (γ ⨾ x) , `var (γ ⨾ x) ⌝                    ≡⟨ ap! (ext (π-⨾ _ _ , `var-⨾ _ _)) ⟩
-  --   φ .η Γ (γ , x)                                        ∎
-  -- ni .inv∘eta Δ = ext λ f →
-  --   `λ (`ν f [ ⌜ π idₛ ⨾ `var idₛ ⌝ ]) ≡⟨ ap! (ηₛ _) ⟩
-  --   `λ ⌜ `ν f [ idₛ ] ⌝               ≡⟨ ap! ([id] _) ⟩
-  --   `λ (`ν f)                         ≡⟨ `→-η _ ⟩
-  --   f                                 ∎ 
-  -- ni .natural Δ Γ γ = ext λ f Ξ σ x → {!   !}
-  -- [`ν] _ _ _ _
+  ni .eta Γ α = `λ (Y.from (α ∘nt ⨾-sem.to))
+  ni .inv Γ f = Y.to (`ν f) ∘nt ⨾-sem.from
+  ni .eta∘inv Γ = ext λ f → 
+    `λ (`ν f [ ⌜ πₛ idₛ ⨾ `πₜ idₛ ⌝ ]) ≡⟨ ap! ηₛ ⟩
+    `λ ⌜ `ν f [ idₛ ] ⌝              ≡⟨ ap! [id] ⟩
+    `λ (`ν f)                        ≡⟨ `→-η ⟩
+     f                                ∎ 
+  ni .inv∘eta Γ = funext λ α →
+    Y.to ⌜ `ν (`λ (Y.from (α ∘nt ⨾-sem.to))) ⌝ ∘nt ⨾-sem.from ≡⟨ ap! `ν-β ⟩
+    ⌜ Y.to (Y.from (α ∘nt ⨾-sem.to)) ⌝ ∘nt ⨾-sem.from ≡⟨ ap! (Y.ε (α ∘nt ⨾-sem.to)) ⟩
+    (α ∘nt ⨾-sem.to) ∘nt ⨾-sem.from ≡⟨ trivial! ⟩
+    α ∘nt (⨾-sem.to ∘nt ⨾-sem.from) ≡⟨ Meta.elimr ⨾-sem.invl ⟩
+    α ∎
+  ni .natural Γ Δ γ = ext λ α → 
+    `λ (α .η (Γ ⨾ A) (πₛ idₛ , `πₜ idₛ)) [ γ ] ≡⟨ [`λ] ⟩
+    `λ (α .η (Γ ⨾ A) (πₛ idₛ , `πₜ idₛ) [ (γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ ]) ≡⟨ ap `λ (sym (α .is-natural _ _ _ $ₚ _)) ⟩
+    `λ (α .η (Δ ⨾ A) (⌜ πₛ idₛ ∘ₛ ((γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ) ⌝ ,  (`πₜ idₛ [ (γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ ]))) ≡⟨ ap! lemma₁ ⟩
+    `λ (α .η (Δ ⨾ A) ((γ ∘ₛ πₛ idₛ) , ⌜ `πₜ idₛ [ (γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ ] ⌝)) ≡⟨ ap! lemma₂ ⟩ 
+    `λ (α .η (Δ ⨾ A) ((γ ∘ₛ πₛ idₛ) , `πₜ idₛ)) ∎
+    where
+      lemma₁ : πₛ idₛ ∘ₛ ((γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ) ≡ (γ ∘ₛ πₛ idₛ)
+      lemma₁ = 
+        πₛ idₛ ∘ₛ ((γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ) ≡⟨ πₛ-∘ ⟩ 
+        πₛ (idₛ ∘ₛ ((γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ)) ≡⟨ ap πₛ idlₛ ⟩ 
+        πₛ ((γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ) ≡⟨ πₛ-β ⟩ 
+        γ ∘ₛ πₛ idₛ ∎
 
-Syntactic-model : Natural-model lzero lzero
-Syntactic-model .Natural-model.Ctx = Syntactic
-Syntactic-model .Natural-model.Tp = Tp
-Syntactic-model .Natural-model.Tp-set = Tp-set
-Syntactic-model .Natural-model.Tm = Tm
-Syntactic-model .Natural-model.∅ = ∅
-Syntactic-model .Natural-model.∅-empty Γ .centre = ∅
-Syntactic-model .Natural-model.∅-empty Γ .paths = η-∅
-Syntactic-model .Natural-model._⨾_ = _⨾_
-Syntactic-model .Natural-model.⨾-sem = ⨾-sem
-Syntactic-model .Natural-model.`⊤ = `⊤
-Syntactic-model .Natural-model.`⊤-sem = `⊤-sem
-Syntactic-model .Natural-model._`×_ = _`×_
-Syntactic-model .Natural-model.`×-sem = `×-sem
-Syntactic-model .Natural-model._`→_ = _`→_
-Syntactic-model .Natural-model.`→-sem = `→-sem
-      
+      lemma₂ : `πₜ idₛ [ (γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ ] ≡ `πₜ idₛ
+      lemma₂ = 
+        `πₜ idₛ [ (γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ ] ≡⟨ [`πₜ] ⟩
+        `πₜ (idₛ ∘ₛ ((γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ)) ≡⟨ ap `πₜ idlₛ ⟩
+        `πₜ ((γ ∘ₛ πₛ idₛ) ⨾ `πₜ idₛ) ≡⟨ `πₜ-β ⟩
+        `πₜ idₛ ∎
+
+
+Syntactic-model : Strict-model lzero lzero
+Syntactic-model .Strict-model.model .Natural-model.Ctx = Syntactic
+Syntactic-model .Strict-model.model .Natural-model.Tp = Tp
+Syntactic-model .Strict-model.model .Natural-model.Tp-set = Tp-set
+Syntactic-model .Strict-model.model .Natural-model.Tm = Tm
+Syntactic-model .Strict-model.model .Natural-model._⨾_ = _⨾_
+Syntactic-model .Strict-model.model .Natural-model.⨾-sem = ⨾-sem
+Syntactic-model .Strict-model.model .Natural-model.`⊤ = `⊤
+Syntactic-model .Strict-model.model .Natural-model.`⊤-sem = `⊤-sem
+Syntactic-model .Strict-model.model .Natural-model._`×_ = _`×_
+Syntactic-model .Strict-model.model .Natural-model.`×-sem = `×-sem
+Syntactic-model .Strict-model.model .Natural-model._`→_ = _`→_
+Syntactic-model .Strict-model.model .Natural-model.`→-sem = `→-sem
+Syntactic-model .Strict-model.model .Natural-model.∅ = ∅
+Syntactic-model .Strict-model.model .Natural-model.∅-empty Γ .centre = ∅
+Syntactic-model .Strict-model.model .Natural-model.∅-empty Γ .paths _ = ∅-η
+Syntactic-model .Strict-model.has-is-strict = hlevel!
   
-        
-```     
+
+    
+          
+```              

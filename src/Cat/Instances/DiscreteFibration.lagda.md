@@ -82,22 +82,7 @@ PSh≡DFib = Precategory-path F ipc where
   ipc .has-is-iso = is-iso→is-equiv (presheaf≃discrete B)
 
  
-DFib-terminal : ∀ {κ} → Terminal (DFib κ κ)
-DFib-terminal {κ} = subst Terminal PSh≡DFib (PSh-terminal {κ = κ} {C = B})
-
-DFib-products : ∀ {κ} → has-products (DFib κ κ)
-DFib-products {κ} = subst has-products PSh≡DFib (PSh-products {κ = κ} {C = B})
-
-
--- lemma : ∀ {κ} → PathP (λ i → Terminal (PSh≡DFib i)) (PSh-terminal {κ = κ} {C = B}) DFib-terminal
--- lemma = to-pathp refl
-
--- lemma' : ∀ {κ} → PathP (λ i → has-products (PSh≡DFib i)) (PSh-products {κ = κ} {C = B}) DFib-products
--- lemma' = to-pathp refl
-
--- PSh-closed : Cartesian-closed (PSh (o ⊔ h ⊔ κ) C) (PSh-products {C = C}) (PSh-terminal {C = C})
-
--- DFib-closed : ∀ {κ} → Cartesian-closed (DFib _ _) DFib-products DFib-terminal
--- DFib-closed {κ} = transport (λ i → Cartesian-closed (PSh≡DFib i) (lemma' i) (lemma i)) (PSh-closed {o = o} {h = ℓ} {κ = κ} {C = B})
+DFib-terminal : ∀ {o' h;} → Terminal (DFib o' h')
+DFib-terminal = ?
 
 ``` 

@@ -216,6 +216,8 @@ module _ where
   Sets o .idl f = refl
   Sets o .idr f = refl
   Sets o .assoc f g h = refl
+
+{-# DISPLAY Sets κ .Precategory._∘_ f g = f Precategory.∘ g #-}
 ```
 
 # Functors {defines=functor}

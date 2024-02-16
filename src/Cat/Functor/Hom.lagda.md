@@ -174,3 +174,46 @@ As expected, the covariant yoneda embedding is also fully faithful.
     sym (nt .is-natural _ _ _) $ₚ _ ∙ ap (nt .η c) (idr g)
   isom .linv _ = idl _
 ```
+
+<!--
+```agda
+
+module _ (F : Functor (C ^op) (Sets h)) where
+  private
+    module F = Functor F
+
+  yoneda : ⌞ F.₀ a ⌟ ≃ (よ₀ a => F)
+  yoneda = Iso→Equiv (fwd , iso bwd rinv linv) where
+    fwd : ⌞ F.₀ a ⌟ → よ₀ a => F
+    fwd a' .η b f = F.₁ f a'
+    fwd a' .is-natural b c g = ext λ f → F.F-∘ _ _ #ₚ a'
+
+    bwd : よ₀ a => F → ⌞ F.₀ a ⌟
+    bwd α = α .η _ id
+
+    rinv : _
+    rinv α = ext λ i x → sym (α .is-natural _ _ _) $ₚ _ ∙ ap (α .η i) (idl _)
+
+    linv : _
+    linv x = F.F-id $ₚ x
+  
+  module Yoneda {a} = Equiv (yoneda {a})
+
+
+  from₁ : (h : Hom a b) (α : よ₀ b => F) → F.₁ h (Yoneda.from α) ≡ Yoneda.from (α ∘nt よ₁ h)
+  from₁ h α = Yoneda.injective $ sym $
+    Yoneda.to (Yoneda.from (α ∘nt よ₁ h)) ≡⟨ Yoneda.ε (α ∘nt よ₁ h) ⟩
+    α ∘nt よ₁ h ≡⟨ 
+      ext (λ i x → 
+        α .η i (h ∘ x) ≡⟨ α .is-natural _ _ _ $ₚ _ ⟩
+        F.F₁ x (α .η _ ⌜ h ⌝) ≡˘⟨ ap¡ (idl _) ⟩
+        F.F₁ x ⌜ α .η _ (id ∘ h) ⌝ ≡⟨ ap! (α .is-natural _ _ _ $ₚ _) ⟩
+        F .F₁ x (F.F₁ h (α .η _ id)) ∎
+      ) 
+    ⟩
+    Yoneda.to (F.₁ h (Yoneda.from α)) ∎
+
+  to₁ : (h : Hom a b) (x : ⌞ F.₀ b ⌟) → Yoneda.to x ∘nt よ₁ h ≡ Yoneda.to (F.₁ h x)
+  to₁ h x = ext λ i y → F.F-∘ _ _ $ₚ _
+```
+-->  
