@@ -4,6 +4,10 @@ open import Cat.Displayed.Cartesian
 open import Cat.Diagram.Pullback
 open import Cat.Displayed.Base
 open import Cat.Prelude
+open import Cat.Displayed.Instances.Pullback
+open import Cat.Displayed.Functor
+open import Cat.Functor.Base
+open import Cat.Instances.Functor
 
 import Cat.Displayed.Reasoning as DR
 import Cat.Displayed.Morphism as DM
@@ -266,7 +270,6 @@ $g'$ are cartesian to construct the relevant paths.
           ∙[] pullr[] _ (p₁'.commutesp q _))))
 ```
 
-<!--
 ```agda
 module _ {o ℓ o' ℓ'} {B : Precategory o ℓ} {E : Displayed B o' ℓ'} where
   open CR B
@@ -280,5 +283,104 @@ module _ {o ℓ o' ℓ'} {B : Precategory o ℓ} {E : Displayed B o' ℓ'} where
 
     H-Level-∫Hom' : ∀ {X Y} {n} → H-Level (∫Hom E X Y) (2 + n)
     H-Level-∫Hom' = H-Level-∫Hom E
+
+module _ 
+  {o₁ ℓ₁ o₂ ℓ₂ o₁' ℓ₁' o₂' ℓ₂'} 
+  {B : Precategory o₁ ℓ₁} {C : Precategory o₂ ℓ₂} 
+  {D : Displayed B o₁' ℓ₁'} {E : Displayed C o₂' ℓ₂'} 
+  {F : Functor B C}
+  (F' : Displayed-functor F D E)
+   where
+
+
+module _ 
+  {o₁ ℓ₁ o₂ ℓ₂ o₁' ℓ₁' o₂' ℓ₂'} 
+  {B : Precategory o₁ ℓ₁} {C : Precategory o₂ ℓ₂} 
+  {D : Displayed B o₁' ℓ₁'} {E : Displayed C o₂' ℓ₂'} 
+  {F : Functor B C}
+  (F' : Displayed-functor F D E)
+   where
+
+  private 
+    module D = Displayed D
+    module E = Displayed E
+    module F = Functor F
+    module F' = Displayed-functor F'
+
+  F∫ : Functor (∫ D) (∫ E)
+  F∫ .Functor.F₀ (x , x') = F.₀ x , F'.₀' x'
+  F∫ .Functor.F₁ (∫hom f f') = ∫hom (F.₁ f) (F'.₁' f')
+  F∫ .Functor.F-id i = ∫hom (F.F-id i) (F'.F-id' i) 
+  F∫ .Functor.F-∘ (∫hom f f') (∫hom g g') i = ∫hom (F.F-∘ f g i) (F'.F-∘' {f' = f'} {g' = g'} i) 
+  -- For some reason using ∫Hom-path causes weird unification failures in stuff using F∫
+
+
+module _ 
+  {o ℓ o' ℓ'} {B : Precategory o ℓ} {D : Displayed B o' ℓ'} where
+
+
+  F∫-id' : F∫ (Id' {ℰ = D}) ≡ Id
+  F∫-id' = Functor-path (λ x → refl) (λ f → refl)
+  
+
+  module _ {o'' ℓ''} {D' : Displayed (∫ D) o'' ℓ''} where
+
+    F∫Id' : Displayed-functor (F∫ Id') D' D'
+    F∫Id' .Displayed-functor.F₀' x' = x'
+    F∫Id' .Displayed-functor.F₁' f' = f'
+    F∫Id' .Displayed-functor.F-id' = refl 
+    F∫Id' .Displayed-functor.F-∘' = refl
+    
+
+module _ 
+  {oa ℓa ob ℓb oc ℓc od ℓd oe ℓe oh ℓh} 
+  {A : Precategory oa ℓa} {B : Precategory ob ℓb} {C : Precategory oc ℓc}
+  {D : Displayed A od ℓd} {E : Displayed B oe ℓe} {H : Displayed C oh ℓh}
+  {F : Functor B C} {G : Functor A B}
+  {F' : Displayed-functor F E H} {G' : Displayed-functor G D E}
+   where
+
+  F∫-∘' : F∫ (F' F∘' G') ≡ (F∫ F') F∘ (F∫ G')
+  F∫-∘' = Functor-path (λ _ → refl) (λ _ → refl)
+
+  module _ 
+    {od' ℓd' oe' ℓe' oh' ℓh'}
+    {D' : Displayed (∫ D) od' ℓd'} {E' : Displayed (∫ E) oe' ℓe'} {H' : Displayed (∫ H) oh' ℓh'}
+    (F'' : Displayed-functor (F∫ F') E' H') (G'' : Displayed-functor (F∫ G') D' E') where
+    
+    private
+      module H' = DR H'
+      module F'' = Displayed-functor F''
+      module G'' = Displayed-functor G''
+    open Displayed-functor
+
+    -- Defining this directly lets us avoid some transp nonsense when we want to prove things about it
+    _F∫∘'_ : Displayed-functor (F∫ (F' F∘' G')) D' H'
+    _F∫∘'_ .F₀' = F''.₀' ⊙ G''.₀'
+    _F∫∘'_ .F₁' = F''.₁' ⊙ G''.₁'
+    _F∫∘'_ .F-id' = H'.cast[] $ (F'' F∘' G'') .F-id'
+    _F∫∘'_ .F-∘' = H'.cast[] $ (F'' F∘' G'') .F-∘'
+        
+
+module _
+  {ob ℓb od ℓd oe ℓe oh ℓh od' ℓd' oe' ℓe' oh' ℓh'}
+  {B : Precategory ob ℓb}
+  {D : Displayed B od ℓd} {E : Displayed B oe ℓe} {H : Displayed B oh ℓh}
+  {D' : Displayed (∫ D) od' ℓd'} {E' : Displayed (∫ E) oe' ℓe'} {H' : Displayed (∫ H) oh' ℓh'}
+  {F : Vertical-functor E H} {G : Vertical-functor D E}
+  (F' : Displayed-functor (F∫ F) E' H') (G' : Displayed-functor (F∫ G) D' E') 
+  where
+  private
+    module H' = DR H'
+    module F' = Displayed-functor F'
+    module G' = Displayed-functor G'
+  open Displayed-functor
+
+  _F∫∘V_ : Displayed-functor (F∫ (F ∘V G)) D' H'
+  _F∫∘V_ .F₀' = F'.₀' ⊙ G'.₀'
+  _F∫∘V_ .F₁' = F'.₁' ⊙ G'.₁'
+  _F∫∘V_ .F-id' = H'.cast[] $ (F' F∘' G') .F-id'
+  _F∫∘V_ .F-∘' = H'.cast[] $ (F' F∘' G') .F-∘'
+
+    
 ```
--->

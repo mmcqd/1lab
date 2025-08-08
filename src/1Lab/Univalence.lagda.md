@@ -851,5 +851,18 @@ subst-∙ : ∀ {ℓ ℓ'} {A : Type ℓ} → (B : A → Type ℓ')
         → subst B (p ∙ q) u ≡ subst B q (subst B p u)
 subst-∙ B p q Bx i =
   transport (ap B (∙-filler' p q (~ i))) (transport-filler-ext (ap B p) i Bx)
+
+is-set→subst⁻subst
+  : ∀ {ℓ ℓ'} {A : Type ℓ} {x y : A}
+  → (P : A → Type ℓ')
+  → is-set A
+  → (p : x ≡ y)
+  → (q : y ≡ x)
+  → (Px : P x)
+  → subst P q (subst P p Px) ≡ Px
+is-set→subst⁻subst P A-set p q Px =
+  subst P q (subst P p Px) ≡⟨ ap (λ q → subst P q (subst P p Px)) (A-set _ _ _ _) ⟩
+  subst P (sym p) (subst P p Px) ≡⟨ transport⁻transport (ap P p) Px ⟩ 
+  Px ∎
 ```
 -->

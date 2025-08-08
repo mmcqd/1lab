@@ -116,6 +116,15 @@ We can improve the previous result by noticing that morphisms
 $f' : x' \to_{f} y'$ give rise to proofs that $f^*(y') = x'$.
 
 ```agda
+
+    instance
+      Ob[]-set : ∀ {n x} → H-Level (Ob[ x ]) (2 + n)
+      Ob[]-set = basic-instance 2 (fibre-set _)
+      {-# OVERLAPS Ob[]-set #-}
+
+      Hom[]-prop : ∀ {n x y x' y'} {f : B.Hom x y} → H-Level (Hom[ f ] x' y') (1 + n)
+      Hom[]-prop = basic-instance 1 Hom[]-is-prop
+  
     opaque
       ^*-lift
         : ∀ {x y x' y'}
@@ -124,6 +133,14 @@ $f' : x' \to_{f} y'$ give rise to proofs that $f^*(y') = x'$.
         → f ^* y' ≡ x'
       ^*-lift {x' = x'} {y' = y'} f f' =
         ap fst $ cart-lift f y' .paths (x' , f')
+
+      π*-lift : 
+        ∀ {x y x' y'}
+        → (f : B.Hom x y)
+        → (f' : Hom[ f ] x' y')
+        → PathP (λ i → Hom[ f ] (^*-lift f f' i) y') (π* f y') f'
+      π*-lift {x' = x'} {y' = y'} f f' = ap snd $ cart-lift f y' .paths (x' , f')
+
 ```
 
 We can further improve this to an equivalence between paths

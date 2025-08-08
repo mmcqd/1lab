@@ -67,8 +67,8 @@ module _ {o ℓ o' ℓ'} {C : Precategory o ℓ} {J : Precategory o' ℓ'} where
 ```agda
 F∘-assoc
   : ∀ {o ℓ o' ℓ' o'' ℓ'' o₃ ℓ₃}
-      {C : Precategory o ℓ} {D : Precategory o' ℓ'} {E : Precategory o'' ℓ''} {F : Precategory o₃ ℓ₃}
-      {F : Functor E F} {G : Functor D E} {H : Functor C D}
+      {B : Precategory o ℓ} {C : Precategory o' ℓ'} {D : Precategory o'' ℓ''} {E : Precategory o₃ ℓ₃}
+      {F : Functor D E} {G : Functor C D} {H : Functor B C}
   → F F∘ (G F∘ H) ≡ (F F∘ G) F∘ H
 F∘-assoc = Functor-path (λ x → refl) λ x → refl
 

@@ -302,6 +302,9 @@ injective→is-embedding! {f = f} inj = injective→is-embedding (hlevel 2) f in
 Iso→is-hlevel! : (n : Nat) → Iso B A → ⦃ _ : H-Level A n ⦄ → is-hlevel B n
 Iso→is-hlevel! n i = Iso→is-hlevel n i (hlevel n)
 
+Equiv→is-hlevel! : (n : Nat) → B ≃ A → ⦃ _ : H-Level A n ⦄ → is-hlevel B n
+Equiv→is-hlevel! n i = Equiv→is-hlevel n i (hlevel n)
+
 {-
 Metaprogram for defining instances of H-Level (R x) n, where R x is a
 record type whose components can all immediately be seen to have h-level

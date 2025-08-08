@@ -313,6 +313,15 @@ infixr 4 _,ₚ_
   .is-iso.from x → _ , x
   .is-iso.rinv x → ap (λ e → subst B e x) (is-contr→is-set c _ _ _ _) ∙ transport-refl x
   .is-iso.linv x → Σ-path (c .paths _) (transport⁻transport (ap B (sym (c .paths (x .fst)))) (x .snd))
+
+Σ-swap-Σ : ∀ {ℓ₁ ℓ₂ ℓ₃ ℓ₄} {A : Type ℓ₁} {B : A → Type ℓ₂} {C : A → Type ℓ₃} {D : (a : A) → B a → C a → Type ℓ₄} 
+      → (Σ[ (a , b) ∈ Σ A B ] Σ[ c ∈ C a ] D a b c) ≃ (Σ[ (a , c) ∈ Σ A C ] Σ[ b ∈ B a ] D a b c)
+Σ-swap-Σ .fst ((a , b) , c , d) = ((a , c) , b , d)
+Σ-swap-Σ .snd = is-iso→is-equiv λ where 
+  .is-iso.from ((a , c) , b , d) → ((a , b) , c , d)
+  .is-iso.rinv _ → refl
+  .is-iso.linv _ → refl
+
 ```
 -->
 

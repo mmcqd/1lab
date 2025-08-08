@@ -127,8 +127,23 @@ module
     → (q1 : ∀ {x y x' y'} {f : A.Hom x y} → (f' : ℰ.Hom[ f ] x' y')
             → PathP (λ i → ℱ.Hom[ p i .F₁ f ] (q0 x' i) (q0 y' i)) (F' .F₁' f') (G' .F₁' f'))
     → PathP (λ i → Displayed-functor (p i) ℰ ℱ) F' G'
-  Displayed-functor-pathp {F = F} {G = G} {F' = F'} {G' = G'} p q0 q1 =
-    injectiveP (λ _ → eqv) ((λ i x' → q0 x' i) ,ₚ (λ i f' → q1 f' i) ,ₚ prop!)
+  Displayed-functor-pathp {F = F} {F' = F'} {G' = G'} p q0 q1 = dfn where
+    -- We need to define this directly to get nice definitional behavior on the projections
+    dfn : PathP (λ i → Displayed-functor (p i) ℰ ℱ) F' G'
+    dfn i .F₀' x' = q0 x' i
+    dfn i .F₁' f' = q1 f' i
+    dfn i .F-id' {x' = x'} j = 
+      is-set→squarep (λ i j → ℱ.Hom[ F-id (p i) j ]-set (q0 x' i) (q0 x' i)) 
+        (q1 ℰ.id') (F-id' F') (F-id' G') (λ _ → ℱ.id') i j
+    dfn i .F-∘' {f = f} {g = g} {a' = a'} {c' = c'} {f' = f'} {g' = g'} j = 
+      is-set→squarep (λ i j → ℱ.Hom[ F-∘ (p i) f g j ]-set (q0 a' i) (q0 c' i))
+        (q1 (f' ℰ.∘' g')) (F-∘' F') (F-∘' G') (λ k → q1 f' k ℱ.∘' q1 g' k) i j
+
+
+  Displayed-functor-is-set : {F : Functor A B} → (∀ x → is-set ℱ.Ob[ x ]) → is-set (Displayed-functor F ℰ ℱ)
+  Displayed-functor-is-set fibre-set = Iso→is-hlevel! 2 eqv where instance
+    ℱOb[] : ∀ {x} → H-Level (ℱ.Ob[ x ]) 2
+    ℱOb[] = hlevel-instance (fibre-set _)
 ```
 -->
 
@@ -296,6 +311,43 @@ To avoid this problem, we provide the following specialized definition.
 
 <!--
 ```agda
+
+module
+  _ {oa ℓa ob ℓb oe ℓe of ℓf}
+    {A : Precategory oa ℓa}
+    {B : Precategory ob ℓb}
+    {ℰ : Displayed A oe ℓe}
+    {ℱ : Displayed B of ℓf}
+    {F : Functor A B} 
+    (F' : Displayed-functor F ℰ ℱ) 
+  where
+
+  F∘'-idr : PathP (λ i → Displayed-functor (F∘-idr {F = F} i) ℰ ℱ) (F' F∘' Id') F'
+  F∘'-idr = Displayed-functor-pathp _ (λ _ → refl) (λ _ → refl)
+
+  F∘'-idl : PathP (λ i → Displayed-functor (F∘-idl {F = F} i) ℰ ℱ) (Id' F∘' F') F'
+  F∘'-idl = Displayed-functor-pathp _ (λ _ → refl) (λ _ → refl)
+
+
+module
+  _ {oa ℓa ob ℓb oc ℓc od ℓd oe ℓe of ℓf og ℓg oh ℓh}
+    {A : Precategory oa ℓa}
+    {B : Precategory ob ℓb}
+    {C : Precategory oc ℓc}
+    {D : Precategory od ℓd}
+    {ℰ : Displayed A oe ℓe}
+    {ℱ : Displayed B of ℓf}
+    {𝒢 : Displayed C og ℓg}
+    {ℋ : Displayed D oh ℓh}
+    {H : Functor A B} {G : Functor B C} {F : Functor C D}
+    (H' : Displayed-functor H ℰ ℱ) (G' : Displayed-functor G ℱ 𝒢) (F' : Displayed-functor F 𝒢 ℋ)
+  where
+
+  F∘'-assoc : PathP (λ i → Displayed-functor (F∘-assoc {F = F} {G = G} {H = H} i) ℰ ℋ) (F' F∘' (G' F∘' H')) ((F' F∘' G') F∘' H')
+  F∘'-assoc = Displayed-functor-pathp _ (λ _ → refl) (λ _ → refl)
+
+
+
 module
   _ {o ℓ o' ℓ' o'' ℓ''}
     {B : Precategory o ℓ}
@@ -405,6 +457,38 @@ module
             → PathP (λ i → ℱ.Hom[ f ] (p0 x' i) (p0 y' i)) (F .F₁' f') (G .F₁' f'))
     → F ≡ G
   Vertical-functor-path = Displayed-functor-pathp refl
+
+  Vertical-functor-is-set : (∀ x → is-set ℱ.Ob[ x ]) → is-set (Vertical-functor ℰ ℱ)
+  Vertical-functor-is-set fibre-set = Displayed-functor-is-set fibre-set
+
+module
+  _ {o ℓ o' ℓ' o'' ℓ''}
+    {B : Precategory o ℓ}
+    {ℰ : Displayed B o' ℓ'}
+    {ℱ : Displayed B o'' ℓ''}
+    (F : Vertical-functor ℰ ℱ)
+  where
+  
+  ∘V-idr : F ∘V Id' ≡ F
+  ∘V-idr = Vertical-functor-path (λ _ → refl) (λ _ → refl)
+
+  ∘V-idl : Id' ∘V F ≡ F
+  ∘V-idl = Vertical-functor-path (λ _ → refl) (λ _ → refl)
+
+module
+  _ {o ℓ oe ℓe of ℓf og ℓg oh ℓh}
+    {B : Precategory o ℓ}
+    {ℰ : Displayed B oe ℓe}
+    {ℱ : Displayed B of ℓf}
+    {𝒢 : Displayed B og ℓg}
+    {ℋ : Displayed B oh ℓh}
+    (H : Vertical-functor ℰ ℱ)
+    (G : Vertical-functor ℱ 𝒢)
+    (F : Vertical-functor 𝒢 ℋ)
+  where
+
+  ∘V-assoc : F ∘V (G ∘V H) ≡ (F ∘V G) ∘V H
+  ∘V-assoc = Vertical-functor-path (λ _ → refl) (λ _ → refl)
 ```
 -->
 

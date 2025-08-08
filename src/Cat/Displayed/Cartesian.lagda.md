@@ -258,6 +258,8 @@ record Cartesian-morphism
   field
     hom' : Hom[ f ] x' y'
     cartesian : is-cartesian f hom'
+  
+  open is-cartesian cartesian public
 ```
 
 <!--

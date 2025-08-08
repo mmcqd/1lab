@@ -1,6 +1,7 @@
 <!--
 ```agda
 open import Cat.Displayed.Cartesian
+open import Cat.Displayed.Cartesian.Discrete
 open import Cat.Displayed.Functor
 open import Cat.Displayed.Total
 open import Cat.Displayed.Base
@@ -37,7 +38,7 @@ _D∘_ : ∀ {o ℓ o' ℓ' o'' ℓ''}
        → {ℬ : Precategory o ℓ}
        → (ℰ : Displayed ℬ o' ℓ') → (ℱ : Displayed (∫ ℰ) o'' ℓ'')
        → Displayed ℬ (o' ⊔ o'') (ℓ' ⊔ ℓ'')
-_D∘_ {ℬ = ℬ} ℰ ℱ = disp where
+_D∘_ {ℬ = ℬ} ℰ ℱ = disp module Disp where
   module ℰ = Displayed ℰ
   module ℱ = Displayed ℱ
 
@@ -59,6 +60,8 @@ _D∘_ {ℬ = ℬ} ℰ ℱ = disp where
     ℰ.idl' (f' .fst) ,ₚ ℱ.idl' (f' .snd)
   disp .Displayed.assoc' f' g' h' =
     (ℰ.assoc' (f' .fst) (g' .fst) (h' .fst)) ,ₚ (ℱ.assoc' (f' .snd) (g' .snd) (h' .snd))
+
+{-# DISPLAY Disp.disp a b = a D∘ b #-}
 ```
 
 We also obtain a [[displayed functor]] from $\cE \cdot \cF$ to $\cE$
@@ -84,11 +87,11 @@ As one may expect, the composition of fibrations is itself a fibration.
 ```agda
 module _
   {o ℓ o' ℓ' o'' ℓ''}
-  {ℬ : Precategory o ℓ}
-  {ℰ : Displayed ℬ o' ℓ'} {ℱ : Displayed (∫ ℰ) o'' ℓ''}
+  {B : Precategory o ℓ}
+  {ℰ : Displayed B o' ℓ'} {ℱ : Displayed (∫ ℰ) o'' ℓ''}
   where
 
-  open Precategory ℬ
+  open Precategory B
 ```
 -->
 
@@ -149,4 +152,109 @@ universal.
           (∫Hom-path ℰ refl (ℰ.π*.commutes _ _))
           (m' .snd)
           (ap snd p)
+```
+
+```agda
+
+
+  discrete-∘ : is-discrete-cartesian-fibration ℰ → is-discrete-cartesian-fibration ℱ 
+             → is-discrete-cartesian-fibration (ℰ D∘ ℱ)
+  discrete-∘ ℰ-disc ℱ-disc = ℰ∘ℱ-disc where 
+    open is-discrete-cartesian-fibration
+
+    module ℰ where
+      open is-discrete-cartesian-fibration ℰ-disc public
+      open Displayed ℰ public
+ 
+    module ℱ where
+      open is-discrete-cartesian-fibration ℱ-disc public
+      open Displayed ℱ public
+
+
+    ℰ∘ℱ-disc : is-discrete-cartesian-fibration (ℰ D∘ ℱ)
+    ℰ∘ℱ-disc .fibre-set x = hlevel 2 
+    ℰ∘ℱ-disc .cart-lift f (y' , y'') = Equiv→is-hlevel 0 (Σ-swap-Σ e⁻¹) (Σ-is-hlevel 0 (ℰ.cart-lift f y') λ (x' , f') → ℱ.cart-lift (∫hom f f') y'') 
+
+
+
+module _
+  {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃ o₄ ℓ₄ o₅ ℓ₅ o₆ ℓ₆}
+  {B : Precategory o₁ ℓ₁} {C : Precategory o₂ ℓ₂}
+  {ℰ : Displayed B o₃ ℓ₃} {ℱ : Displayed C o₄ ℓ₄}
+  {𝒢 : Displayed (∫ ℰ) o₅ ℓ₅} {ℋ : Displayed (∫ ℱ) o₆ ℓ₆}
+  {F : Functor B C} 
+  {F₁ : Displayed-functor F ℰ ℱ}
+  (F₂ : Displayed-functor (F∫ F₁) 𝒢 ℋ)
+  where
+  private
+    module F = Functor F
+    module F₁ = Displayed-functor F₁
+    module F₂ = Displayed-functor F₂
+
+  D∘∫ : Displayed-functor F (ℰ D∘ 𝒢) (ℱ D∘ ℋ)
+  D∘∫ .Displayed-functor.F₀' (x' , x'') = F₁.₀' x' , F₂.₀' x''
+  D∘∫ .Displayed-functor.F₁' (f , f'') = F₁.₁' f , F₂.₁' f''
+  D∘∫ .Displayed-functor.F-id' = F₁.F-id' ,ₚ F₂.F-id'
+  D∘∫ .Displayed-functor.F-∘' = F₁.F-∘' ,ₚ F₂.F-∘'
+
+
+module _
+  {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃ o₄ ℓ₄}
+  {B : Precategory o₁ ℓ₁} 
+  {ℰ : Displayed B o₂ ℓ₂} 
+  {𝒢 : Displayed (∫ ℰ) o₃ ℓ₃} {ℋ : Displayed (∫ ℰ) o₄ ℓ₄}
+  (F : Vertical-functor 𝒢 ℋ)
+  where
+
+  private
+    module F = Displayed-functor F
+
+  D∘∫V : Vertical-functor (ℰ D∘ 𝒢) (ℰ D∘ ℋ)
+  D∘∫V .Displayed-functor.F₀' (x' , x'') = x' , F.F₀' x''
+  D∘∫V .Displayed-functor.F₁' (f , f'') = f , F.F₁' f''
+  D∘∫V .Displayed-functor.F-id' = refl ,ₚ F.F-id'
+  D∘∫V .Displayed-functor.F-∘' = refl ,ₚ F.F-∘'
+
+
+ 
+
+open import Cat.Displayed.Instances.Pullback
+
+module _
+  {ob ℓb od ℓd}
+  {B : Precategory ob ℓb} 
+  {D : Displayed B od ℓd} 
+  (F : Functor (∫ D) B)
+  where
+  private
+    module D = Displayed D 
+    module F = Functor F
+
+  -- This feels too specialized, is there some nice generalization/name for this?
+  -- Also connected to Change-of-base-functor somehow or other
+
+  Collapse : Functor (∫ (D D∘ Change-of-base F D)) (∫ D)
+  Collapse .Functor.F₀ (x , (y , z)) = F.₀ (x , y) , z
+  Collapse .Functor.F₁ (∫hom f (g , h)) = ∫hom (F.₁ (∫hom f g)) h
+  Collapse .Functor.F-id  = ∫Hom-path _ F.F-id (to-pathp $ transport⁻transport (λ i → D.Hom[ F.F-id (~ i) ] _ _) _)
+  Collapse .Functor.F-∘ _ _  = ∫Hom-path _ (F.F-∘ _ _) (to-pathp (transport⁻transport (λ i → D.Hom[ F.F-∘ _ _ (~ i) ] _ _) _))
+
+
+module _
+  {ob ℓb od ℓd oe ℓe}
+  {B : Precategory ob ℓb} 
+  {D : Displayed B od ℓd} 
+  {E : Displayed (∫ D) oe ℓe}
+  (F : Functor (∫ D) B)
+  where
+  private
+    module D = Displayed D 
+    module F = Functor F
+
+  -- Collapse₂ : Functor (∫ ((D D∘ Change-of-base F D) D∘ Change-of-base (Collapse F) E)) (∫ D)
+  -- Collapse₂ .Functor.F₀ (a , (b , c) , d) = F.₀ (a , b) , c
+  -- Collapse₂ .Functor.F₁ = {!   !}
+  -- Collapse₂ .Functor.F-id = {!   !}
+  -- Collapse₂ .Functor.F-∘ = {!   !}
+
 ```
