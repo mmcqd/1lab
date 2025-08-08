@@ -101,10 +101,25 @@ module _ {o ℓ o' ℓ' o'' ℓ''} {B : Precategory o ℓ}  where
   open Displayed-functor
 
   Poly-cartesian : Cartesian-fibration (Poly B o' ℓ' o'' ℓ'')
-  Poly-cartesian f y' .x' x = {! Change-of-base  !} , {!   !}
-  Poly-cartesian f y' .lifting x = {!   !}
-  Poly-cartesian f y' .cartesian = {!   !}
+  Poly-cartesian f y' .x' x = Change-of-base (f x) (y' x .fst) , Change-of-base-discrete-fibration _ _ (y' x .snd)
+  Poly-cartesian f y' .lifting x = Change-of-base-functor _ _
+  Poly-cartesian f y' .cartesian .universal {u' = u'} m h' x = F where
+    module y' = DCF (y' x)
+    F : Displayed-functor (m x) (u' x .fst) (Change-of-base (f x) (y' x .fst))
+    F .F₀' = h' x .F₀'
+    F .F₁' = h' x .F₁'
+    F .F-id' = is-prop→pathp (λ _ → hlevel 1) _ _
+    F .F-∘' = is-prop→pathp (λ _ → hlevel 1) _ _
+  Poly-cartesian f y' .cartesian .commutes m h' = funext λ _ → Displayed-functor-pathp _ (λ _ → refl) (λ _ → refl)
+  Poly-cartesian f y' .cartesian .unique m' p = funext λ x → Displayed-functor-pathp _ (λ x'' → ap (λ z → z x .F₀' x'') p) (λ f' → apd (λ _ z → z x .F₁' f') p)
   
+
+
+module Poly {o ℓ} (B : Precategory o ℓ) o' ℓ' o'' ℓ'' where
+  open Displayed (Poly B o' ℓ' o'' ℓ'') public
+  open Cartesian-fibration (Poly B o' ℓ' o'' ℓ'') Poly-cartesian public
+
+
 --   Poly-cartesian : Cartesian-fibration (Poly B o' ℓ' o'' ℓ'')
 --   Poly-cartesian f (y' , y'*) .x' = Change-of-base (F∫ f) y' , Change-of-base-discrete-fibration _ _ y'*
 --   Poly-cartesian f (y' , _) .lifting = Change-of-base-functor (F∫ f) y'
@@ -121,11 +136,6 @@ module _ {o ℓ o' ℓ' o'' ℓ''} {B : Precategory o ℓ}  where
 --     Displayed-functor-pathp refl (λ _ → refl) (λ _ → refl)
 --   Poly-cartesian f y' .cartesian .unique _ p = 
 --     Displayed-functor-pathp refl (λ x'' → ap (λ z → z .F₀' x'') p) (λ f' → apd (λ _ z → z .F₁' f') p)
-
-
--- module Poly {o ℓ} (B : Precategory o ℓ) o' ℓ' o'' ℓ'' where
---   open Displayed (Poly B o' ℓ' o'' ℓ'') public
---   open Cartesian-fibration (Poly B o' ℓ' o'' ℓ'') Poly-cartesian public
 
 
 

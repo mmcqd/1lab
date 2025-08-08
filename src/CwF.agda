@@ -42,7 +42,7 @@ record CwF o ℓ : Type (lsuc (o ⊔ ℓ)) where
   -- Contexts are just a category
   field
     Ctxs : Precategory o ℓ
-
+{-
   module Ctxs = Cat.Reasoning Ctxs
   module CtxFib = Cat.Reasoning (DCF Ctxs o ℓ)
   module ΣCtx = Poly Ctxs o ℓ o ℓ
@@ -51,11 +51,11 @@ record CwF o ℓ : Type (lsuc (o ⊔ ℓ)) where
     TpsFib : CtxFib.Ob
     TmsFib : ΣCtx.Ob[ TpsFib ]
 
-  module Tps = DCF TpsFib
-  Tps = TpsFib .fst
+  -- module Tps = DCF TpsFib
+  -- Tps = TpsFib .fst
 
-  module Tms = DCF TmsFib
-  Tms = TmsFib .fst
+  -- module Tms = DCF TmsFib
+  -- Tms = TmsFib .fst
 
   module ΣTps = Poly (∫ Tps) o ℓ o ℓ
   module ΣTms = Poly (∫ Tms) o ℓ o ℓ
@@ -82,20 +82,9 @@ record CwF o ℓ : Type (lsuc (o ⊔ ℓ)) where
   ExtCtx = πᶠ Tps F∘ πᶠ Tms F∘ Extend
 
 
-  TpFam : ΣCtx.Ob[ TpsFib ]
-  TpFam = Change-of-base ExtCtx Tps , Change-of-base-discrete-fibration _ _ (TpsFib .snd)
 
-
-
-
-  ChkFam : ΣTps.Ob[ TpFam ]
-  ChkFam = {!   !}
-    -- (Change-of-base (F∫ (Change-of-base-functor _ _)) Tms) , Change-of-base-discrete-fibration _ _ (TmsFib .snd)
-
-  -- _ = {! ChkFam .fst .Displayed.Ob[_]  !}
-
-  -- TpFam : CtxFib.Ob
-  -- TpFam = (Tps D∘ Change-of-base ExtCtx Tps) , discrete-∘ (TpsFib .snd) (Change-of-base-discrete-fibration _ _ (TpsFib .snd))
+  TpFam : CtxFib.Ob
+  TpFam = (Tps D∘ Change-of-base ExtCtx Tps) , discrete-∘ (TpsFib .snd) (Change-of-base-discrete-fibration _ _ (TpsFib .snd))
 
 
   -- ChkFam : CtxPoly.Ob[ TpFam ]
@@ -219,7 +208,7 @@ record CwF o ℓ : Type (lsuc (o ⊔ ℓ)) where
     π-tp : ∀ {Γ} {A : Tp Γ} → A [ π ]≡ wkₜ A 
     π-tp {Γ} {A} = counit.ε (Γ , A) .snd
 
-
+-}
 
 -- record CwF oc hc otp htp otm htm : Type (lsuc (oc ⊔ hc ⊔ otm ⊔ htm ⊔ otp ⊔ htp)) where
 --   field
@@ -447,9 +436,9 @@ record CwF o ℓ : Type (lsuc (o ⊔ ℓ)) where
 
 -- record PiStructure (C : CwF lzero lzero lzero lzero lzero lzero) : Type (lsuc lzero) where
 --   open CwF C
---   field 2
+--   field
 --     Pi : Vertical-functor TpFam Tps
---     -- Lam : Displayed-functor (F∫ Pi) {!  !} Tms
+--     Lam : Displayed-functor (F∫ Pi) ChkFam Tms
 
 --   Lam : FamS.Hom[_] {x = TpFam ₛ} Pi (Pi FamS.^* (Tms ₛ)) (Tms ₛ)
 --   Lam = {!   !}
