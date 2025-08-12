@@ -248,6 +248,21 @@ abbreviations here too:
            ((β ◆ (γ ◆ δ)) ∘ α→ _ _ _)
   α→nat {A} {B} {C} {D} {f} {f'} {g} {g'} {h} {h'} β γ δ =
     associator.to .is-natural (f , g , h) (f' , g' , h') (β , γ , δ)
+
+  λ≅ : ∀ {A B} (f : A ↦ B) → Cr._≅_ (Hom A B) f (id ⊗ f)
+  λ≅ = isoⁿ→iso unitor-l 
+
+  ρ≅ : ∀ {A B} (f : A ↦ B) → Cr._≅_ (Hom A B) f (f ⊗ id)
+  ρ≅ = isoⁿ→iso unitor-r
+  
+  α≅ :  ∀ {A B C D} (f : C ↦ D) (g : B ↦ C) (h : A ↦ B) → Cr._≅_ (Hom A D) ((f ⊗ g) ⊗ h) (f ⊗ (g ⊗ h))
+  α≅ f g h = isoⁿ→iso associator (f , g , h)
+
+  -- ◀≅ : ∀ {A B} {f g : A ↦ B} → Cr._≅_ (Hom A B) f g → Cr._≅_ (Hom A B) (f ⊗ id) (g ⊗ id)
+  -- ◀≅ {A} {B} p = Cr._∙Iso_ (Hom A B) (Cr._Iso⁻¹ _ (ρ≅ _)) (Cr._∙Iso_ (Hom A B) p (ρ≅ _))
+
+
+
 ```
 
 The final data we need are coherences relating the left and right

@@ -127,8 +127,22 @@ module
     → (q1 : ∀ {x y x' y'} {f : A.Hom x y} → (f' : ℰ.Hom[ f ] x' y')
             → PathP (λ i → ℱ.Hom[ p i .F₁ f ] (q0 x' i) (q0 y' i)) (F' .F₁' f') (G' .F₁' f'))
     → PathP (λ i → Displayed-functor (p i) ℰ ℱ) F' G'
-  Displayed-functor-pathp {F = F} {G = G} {F' = F'} {G' = G'} p q0 q1 =
-    injectiveP (λ _ → eqv) ((λ i x' → q0 x' i) ,ₚ (λ i f' → q1 f' i) ,ₚ prop!)
+  Displayed-functor-pathp {F = F} {F' = F'} {G' = G'} p q0 q1 = dfn where
+    -- We need to define this directly to get nice definitional behavior on the projections
+    dfn : PathP (λ i → Displayed-functor (p i) ℰ ℱ) F' G'
+    dfn i .F₀' x' = q0 x' i
+    dfn i .F₁' f' = q1 f' i
+    dfn i .F-id' {x' = x'} j = 
+      is-set→squarep (λ i j → ℱ.Hom[ F-id (p i) j ]-set (q0 x' i) (q0 x' i)) 
+        (q1 ℰ.id') (F-id' F') (F-id' G') (λ _ → ℱ.id') i j
+    dfn i .F-∘' {f = f} {g = g} {a' = a'} {c' = c'} {f' = f'} {g' = g'} j = 
+      is-set→squarep (λ i j → ℱ.Hom[ F-∘ (p i) f g j ]-set (q0 a' i) (q0 c' i))
+        (q1 (f' ℰ.∘' g')) (F-∘' F') (F-∘' G') (λ k → q1 f' k ℱ.∘' q1 g' k) i j
+
+  Displayed-functor-is-set : {F : Functor A B} → (∀ x → is-set ℱ.Ob[ x ]) → is-set (Displayed-functor F ℰ ℱ)
+  Displayed-functor-is-set fibre-set = Iso→is-hlevel! 2 eqv where instance
+    ℱOb[] : ∀ {x} → H-Level (ℱ.Ob[ x ]) 2
+    ℱOb[] = hlevel-instance (fibre-set _)
 ```
 -->
 
@@ -405,6 +419,23 @@ module
             → PathP (λ i → ℱ.Hom[ f ] (p0 x' i) (p0 y' i)) (F .F₁' f') (G .F₁' f'))
     → F ≡ G
   Vertical-functor-path = Displayed-functor-pathp refl
+
+  Vertical-functor-path-prop
+    : {F G : Vertical-functor ℰ ℱ}
+    → (∀ {x y x' y'} {f : B.Hom x y} → is-prop (ℱ.Hom[ f ] x' y'))
+    → (p0 : ∀ {x} → (x' : ℰ.Ob[ x ]) → F .F₀' x' ≡ G .F₀' x')
+    → F ≡ G
+  Vertical-functor-path-prop prop p0 = Vertical-functor-path p0 (λ _ → is-prop→pathp (λ _ → prop) _ _)
+
+  Vertical-functor-path-prop! 
+    : {F G : Vertical-functor ℰ ℱ}
+    → ⦃ _ : ∀ {x y x' y'} {f : B.Hom x y} → H-Level (ℱ.Hom[ f ] x' y') 1 ⦄ 
+    → (p0 : ∀ {x} → (x' : ℰ.Ob[ x ]) → F .F₀' x' ≡ G .F₀' x')
+    → F ≡ G
+  Vertical-functor-path-prop! = Vertical-functor-path-prop (hlevel 1)
+  
+  Vertical-functor-is-set : (∀ x → is-set ℱ.Ob[ x ]) → is-set (Vertical-functor ℰ ℱ)
+  Vertical-functor-is-set fibre-set = Displayed-functor-is-set fibre-set
 ```
 -->
 

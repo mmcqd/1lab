@@ -427,6 +427,30 @@ module _
 
   module pre-invl = Equiv pre-invl
   module post-invl = Equiv post-invl
+
+module _ 
+  {a b x y} (i : a ≅ b) (j : x ≅ y)
+  where abstract
+
+  private 
+    module i = _≅_ i
+    module j = _≅_ j
+
+  conjugate-from : f ∘ i.from ≡ j.from ∘ g → j.to ∘ f ≡ g ∘ i.to
+  conjugate-from {f = f} {g = g} p = 
+    j.to ∘ f                     ≡⟨ intror i.invr ⟩
+    (j.to ∘ f) ∘ i.from ∘ i.to   ≡⟨ pull-inner p ⟩
+    j.to ∘ ((j.from ∘ g) ∘ i.to) ≡⟨ assoc _ _ _ ⟩
+    (j.to ∘ (j.from ∘ g)) ∘ i.to ≡⟨ ap (_∘ i.to) (cancell j.invl) ⟩
+    g ∘ i.to                     ∎
+
+  conjugate-to : j.to ∘ f ≡ g ∘ i.to → f ∘ i.from ≡ j.from ∘ g
+  conjugate-to {f = f} {g = g} p =
+    f ∘ i.from                     ≡⟨ introl j.invr ⟩
+    (j.from ∘ j.to) ∘ f ∘ i.from   ≡⟨ pull-inner p ⟩
+    j.from ∘ (g ∘ i.to) ∘ i.from   ≡⟨ ap (j.from ∘_) (cancelr i.invl) ⟩
+    j.from ∘ g                     ∎
+
 ```
 
 If we have a commuting triangle of isomorphisms, then we

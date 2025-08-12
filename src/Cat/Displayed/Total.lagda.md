@@ -4,6 +4,7 @@ open import Cat.Displayed.Cartesian
 open import Cat.Diagram.Pullback
 open import Cat.Displayed.Base
 open import Cat.Prelude
+open import Cat.Displayed.Functor
 
 import Cat.Displayed.Reasoning as DR
 import Cat.Displayed.Morphism as DM
@@ -280,5 +281,63 @@ module _ {o ℓ o' ℓ'} {B : Precategory o ℓ} {E : Displayed B o' ℓ'} where
 
     H-Level-∫Hom' : ∀ {X Y} {n} → H-Level (∫Hom E X Y) (2 + n)
     H-Level-∫Hom' = H-Level-∫Hom E
+
+module _ 
+  {ob ℓb oc ℓc od ℓd oe ℓe} 
+  {B : Precategory ob ℓb} {C : Precategory oc ℓc} 
+  {D : Displayed B od ℓd} {E : Displayed C oe ℓe} 
+  {F : Functor B C}
+  (F' : Displayed-functor F D E)
+   where
+
+  private 
+    module D = Displayed D
+    module E = Displayed E
+    module F = Functor F
+    module F' = Displayed-functor F'
+
+  ∫ᶠ : Functor (∫ D) (∫ E)
+  ∫ᶠ .Functor.F₀ (x , x') = F.₀ x , F'.₀' x'
+  ∫ᶠ .Functor.F₁ (∫hom f f') = ∫hom (F.₁ f) (F'.₁' f')
+  ∫ᶠ .Functor.F-id i = ∫hom (F.F-id i) (F'.F-id' i) 
+  ∫ᶠ .Functor.F-∘ (∫hom f f') (∫hom g g') i = ∫hom (F.F-∘ f g i) (F'.F-∘' {f' = f'} {g' = g'} i) 
+
+
+
+module _ 
+  {o ℓ o' ℓ' o'' ℓ''} 
+  {B : Precategory o ℓ}
+  {D : Displayed B o' ℓ'}
+  {D' : Displayed (∫ D) o'' ℓ''}
+  where
+
+  ∫ᶠId' : Displayed-functor (∫ᶠ Id') D' D'
+  ∫ᶠId' .Displayed-functor.F₀' x' = x'
+  ∫ᶠId' .Displayed-functor.F₁' f' = f'
+  ∫ᶠId' .Displayed-functor.F-id' = refl 
+  ∫ᶠId' .Displayed-functor.F-∘' = refl
+    
+
+
+module _
+  {ob ℓb od ℓd oe ℓe oh ℓh od' ℓd' oe' ℓe' oh' ℓh'}
+  {B : Precategory ob ℓb}
+  {D : Displayed B od ℓd} {E : Displayed B oe ℓe} {H : Displayed B oh ℓh}
+  {D' : Displayed (∫ D) od' ℓd'} {E' : Displayed (∫ E) oe' ℓe'} {H' : Displayed (∫ H) oh' ℓh'}
+  {F : Vertical-functor E H} {G : Vertical-functor D E}
+  (F' : Displayed-functor (∫ᶠ F) E' H') (G' : Displayed-functor (∫ᶠ G) D' E') 
+  where
+  private
+    module H' = DR H'
+    module F' = Displayed-functor F'
+    module G' = Displayed-functor G'
+  open Displayed-functor
+
+  _∫ᶠ∘V_ : Displayed-functor (∫ᶠ (F ∘V G)) D' H'
+  _∫ᶠ∘V_ .F₀' = F'.₀' ⊙ G'.₀'
+  _∫ᶠ∘V_ .F₁' = F'.₁' ⊙ G'.₁'
+  _∫ᶠ∘V_ .F-id' = H'.cast[] $ (F' F∘' G') .F-id'
+  _∫ᶠ∘V_ .F-∘' = H'.cast[] $ (F' F∘' G') .F-∘'
+
 ```
 -->

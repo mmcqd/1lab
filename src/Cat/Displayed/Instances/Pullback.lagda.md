@@ -1,8 +1,10 @@
 <!--
 ```agda
 open import Cat.Displayed.Cartesian
+open import Cat.Displayed.Cartesian.Discrete
 open import Cat.Instances.Functor
 open import Cat.Displayed.Base
+open import Cat.Displayed.Functor
 open import Cat.Prelude
 
 import Cat.Displayed.Reasoning as Dr
@@ -108,4 +110,15 @@ Change-of-base-fibration fib f FY' = f-cart-lift
         π* (F₁ f) FY' E.∘' m'                                    ≡⟨ Ds.disp! E ⟩
         hom[ F-∘ f m ] (hom[ F-∘ f m ]⁻ (π* (F₁ f) FY' E.∘' m')) ≡⟨ ap hom[ F-∘ f m ] p ⟩
         hom[ F-∘ f m ] h'                                        ∎
+
+open is-discrete-cartesian-fibration
+Change-of-base-discrete-fibration : is-discrete-cartesian-fibration E → is-discrete-cartesian-fibration Change-of-base
+Change-of-base-discrete-fibration E* .fibre-set x = E* .fibre-set (F₀ x)
+Change-of-base-discrete-fibration E* .cart-lift f y' = E* .cart-lift (F₁ f) y'
+
+Change-of-base-functor : Displayed-functor F Change-of-base E
+Change-of-base-functor .Displayed-functor.F₀' x = x
+Change-of-base-functor .Displayed-functor.F₁' f = f
+Change-of-base-functor .Displayed-functor.F-id' = to-pathp $ transport⁻transport (λ i → E.Hom[ _ ] _ _) _
+Change-of-base-functor .Displayed-functor.F-∘' = to-pathp $ transport⁻transport (λ i → E.Hom[ _ ] _ _) _
 ```

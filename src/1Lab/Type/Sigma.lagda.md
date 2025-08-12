@@ -318,6 +318,15 @@ infixr 4 _,ₚ_
 ×-swap .snd .is-eqv y = contr (f .fst) (f .snd) where
   f = strict-fibres _ y
 
+Σ-swap-Σ : ∀ {ℓ₁ ℓ₂ ℓ₃ ℓ₄} {A : Type ℓ₁} {B : A → Type ℓ₂} {C : A → Type ℓ₃} {D : (a : A) → B a → C a → Type ℓ₄} 
+      → (Σ[ (a , b) ∈ Σ A B ] Σ[ c ∈ C a ] D a b c) ≃ (Σ[ (a , c) ∈ Σ A C ] Σ[ b ∈ B a ] D a b c)
+Σ-swap-Σ .fst ((a , b) , c , d) = ((a , c) , b , d)
+Σ-swap-Σ .snd = is-iso→is-equiv λ where 
+  .is-iso.from ((a , c) , b , d) → ((a , b) , c , d)
+  .is-iso.rinv _ → refl
+  .is-iso.linv _ → refl
+
+
 Σ-contr-fst
   : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'}
   → (c : is-contr A)

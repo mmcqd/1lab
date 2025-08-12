@@ -101,4 +101,10 @@ Flip .Functor.F₀ (x , y) = F₀ (y , x)
 Flip .Functor.F₁ (x , y) = F₁ (y , x)
 Flip .Functor.F-id    = F-id
 Flip .Functor.F-∘ f g = F-∘ _ _
+
+Op×ᶜ : Functor (C ^op ×ᶜ D ^op) (E ^op)
+Op×ᶜ .Functor.F₀ = F₀
+Op×ᶜ .Functor.F₁ = F₁
+Op×ᶜ .Functor.F-id = F-id
+Op×ᶜ .Functor.F-∘ f g = F-∘ _ _
 ```

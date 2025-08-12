@@ -111,6 +111,19 @@ conclude that $f' = f''$.
       Σ-inj-set (fibre-set _) $
       is-contr→is-prop (cart-lift f y') (x' , f') (x' , f'')
 ```
+<!--
+```agda
+    instance
+      Ob[]-set : ∀ {n x} → H-Level (Ob[ x ]) (2 + n)
+      Ob[]-set = basic-instance 2 (fibre-set _)
+      {-# OVERLAPS Ob[]-set #-}
+
+      Hom[]-prop : ∀ {n x y x' y'} {f : B.Hom x y} → H-Level (Hom[ f ] x' y') (1 + n)
+      Hom[]-prop = basic-instance 1 Hom[]-is-prop
+  
+```
+-->
+
 
 We can improve the previous result by noticing that morphisms
 $f' : x' \to_{f} y'$ give rise to proofs that $f^*(y') = x'$.
@@ -450,4 +463,18 @@ it survives automatically.
     unquoteDecl eqv = declare-record-iso eqv (quote is-discrete-cartesian-fibration)
     hl : ∀ x → is-prop _
     hl x = Iso→is-hlevel! 1 eqv
+
+
+module _ {o ℓ o' ℓ'} {B : Precategory o ℓ} {E : Displayed B o' ℓ'} where
+  private
+    module B = Cat.Reasoning B
+    module E = Displayed E
+    open Cat.Displayed.Reasoning E
+    open Cat.Displayed.Morphism E
+    open Displayed E
+    unquoteDecl eqv = declare-record-iso eqv (quote is-discrete-cartesian-fibration)
+
+  instance
+    dfib-prop : ∀ {n} → H-Level (is-discrete-cartesian-fibration E) (1 + n)
+    dfib-prop = basic-instance 1 (Iso→is-hlevel! 1 eqv)
 ```

@@ -1,6 +1,7 @@
 <!--
 ```agda
 open import Cat.Displayed.Cartesian
+open import Cat.Displayed.Cartesian.Discrete
 open import Cat.Displayed.Functor
 open import Cat.Displayed.Total
 open import Cat.Displayed.Base
@@ -68,7 +69,7 @@ that projects out the data of $\cE$ from the composite.
 πᵈ : ∀ {o ℓ o' ℓ' o'' ℓ''}
     → {ℬ : Precategory o ℓ}
     → {ℰ : Displayed ℬ o' ℓ'} {ℱ : Displayed (∫ ℰ) o'' ℓ''}
-    → Displayed-functor Id (ℰ D∘ ℱ) ℰ
+    → Vertical-functor (ℰ D∘ ℱ) ℰ
 πᵈ .Displayed-functor.F₀' = fst
 πᵈ .Displayed-functor.F₁' = fst
 πᵈ .Displayed-functor.F-id' = refl
@@ -149,4 +150,43 @@ universal.
           (∫Hom-path ℰ refl (ℰ.π*.commutes _ _))
           (m' .snd)
           (ap snd p)
+
+
+  discrete-∘ : is-discrete-cartesian-fibration ℰ → is-discrete-cartesian-fibration ℱ 
+             → is-discrete-cartesian-fibration (ℰ D∘ ℱ)
+  discrete-∘ ℰ-disc ℱ-disc = ℰ∘ℱ-disc where 
+    open is-discrete-cartesian-fibration
+
+    module ℰ where
+      open is-discrete-cartesian-fibration ℰ-disc public
+      open Displayed ℰ public
+ 
+    module ℱ where
+      open is-discrete-cartesian-fibration ℱ-disc public
+      open Displayed ℱ public
+
+
+    ℰ∘ℱ-disc : is-discrete-cartesian-fibration (ℰ D∘ ℱ)
+    ℰ∘ℱ-disc .fibre-set x = hlevel 2 
+    ℰ∘ℱ-disc .cart-lift f (y' , y'') = Equiv→is-hlevel 0 (Σ-swap-Σ e⁻¹) (Σ-is-hlevel 0 (ℰ.cart-lift f y') λ (x' , f') → ℱ.cart-lift (∫hom f f') y'') 
+
+
+module _
+  {ob ℓb oe ℓe og ℓg ok ℓk}
+  {B : Precategory ob ℓb} 
+  {ℰ : Displayed B oe ℓe} 
+  {𝒢 : Displayed (∫ ℰ) og ℓg} {ℋ : Displayed (∫ ℰ) ok ℓk}
+  (F : Vertical-functor 𝒢 ℋ)
+  where
+
+  private
+    module F = Displayed-functor F
+
+  D∘⟨-,_⟩ : Vertical-functor (ℰ D∘ 𝒢) (ℰ D∘ ℋ)
+  D∘⟨-,_⟩ .Displayed-functor.F₀' (x' , x'') = x' , F.F₀' x''
+  D∘⟨-,_⟩ .Displayed-functor.F₁' (f , f'') = f , F.F₁' f''
+  D∘⟨-,_⟩ .Displayed-functor.F-id' = refl ,ₚ F.F-id'
+  D∘⟨-,_⟩ .Displayed-functor.F-∘' = refl ,ₚ F.F-∘'
+
+
 ```
