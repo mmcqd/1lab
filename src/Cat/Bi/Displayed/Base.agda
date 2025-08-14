@@ -8,12 +8,15 @@ open import Cat.Displayed.Functor
 open import Cat.Displayed.Instances.TotalProduct
 open import Cat.Displayed.Instances.DisplayedFunctor hiding (_◆'_)
 open import Cat.Displayed.Morphism
+open import Cat.Displayed.Functor.Naturality
 import Cat.Displayed.Reasoning as DR
 
 module Cat.Bi.Displayed.Base where
+
 open Functor
 open Displayed-functor
 open _=[_]=>_
+open make-natural-iso[_]
 
 module _ where
  
@@ -60,7 +63,6 @@ module _ where
 record Bidisplayed {o oh ℓh} (B : Prebicategory o oh ℓh) o' oh' ℓh' : Type (lsuc (o' ⊔ oh' ⊔ ℓh') ⊔ o ⊔ oh ⊔ ℓh) where
   no-eta-equality
   open Prebicategory B
-  open Displayed-functor
   field
     Ob[_] : Ob → Type o'
     Hom[_,_] : ∀ {A B} → Ob[ A ] → Ob[ B ] → Displayed (Hom A B) oh' ℓh'
@@ -249,20 +251,54 @@ record Bidisplayed {o oh ℓh} (B : Prebicategory o oh ℓh) o' oh' ℓh' : Type
 
 -- Lets define the displayed bicategory of displayed categories!
 
-open Bidisplayed
-Displayed-cat : ∀ {o ℓ} o' ℓ' → Bidisplayed (Cat o ℓ) _ _ _
-Displayed-cat o' ℓ' .Ob[_] C = Displayed C o' ℓ'
-Displayed-cat o' ℓ' .Hom[_,_] D E = Disp[ D , E ]
-Displayed-cat o' ℓ' .↦id' = Id'
-Displayed-cat o' ℓ' .compose' = F∘'-functor
-Displayed-cat o' ℓ' .unitor-l' {A' = A'} {B'} = make-iso[_] _ _
-  (NT' (λ F' → NT' (λ x' → B'.id') λ _ _ _ → to-pathp (DR.id-comm[] B')) 
-        λ x' y' f' → Nat'-pathp refl refl _ refl refl {!   !})
-  {!   !} 
-  {!   !} 
-  {!   !}
-  where module B' = Displayed B'
-Displayed-cat o' ℓ' .unitor-r' = {!   !}
-Displayed-cat o' ℓ' .associator' = {!   !}
-Displayed-cat o' ℓ' .triangle' = {!   !}
-Displayed-cat o' ℓ' .pentagon' = {!   !}
+open Bidisplayed hiding (_∘'_)
+Displayed-cat : ∀ o ℓ o' ℓ' → Bidisplayed (Cat o ℓ) _ _ _
+Displayed-cat o ℓ o' ℓ' .Ob[_] C = Displayed C o' ℓ'
+Displayed-cat o ℓ o' ℓ' .Hom[_,_] D E = Disp[ D , E ]
+Displayed-cat o ℓ o' ℓ' .↦id' = Id'
+Displayed-cat o ℓ o' ℓ' .compose' = F∘'-functor
+Displayed-cat o ℓ o' ℓ' .unitor-l' {B' = B'} = to-natural-iso' ni where
+  open Displayed B'
+  open DR B'
+  ni : make-natural-iso[ _ ] _ _
+  ni .eta' x' = NT' (λ _ → id') λ _ _ _ → id-comm-sym[]
+  ni .inv' x' = NT' (λ _ → id') λ _ _ _ → id-comm-sym[]
+  ni .eta∘inv' x' = Nat'-path λ x'' → idl' _
+  ni .inv∘eta' x' = Nat'-path λ x'' → idl' _
+  ni .natural' x' y' f' = Nat'-path λ x'' → cast[] $ symP $ (idr' _ ∙[] id-comm[])
+
+Displayed-cat o ℓ o' ℓ' .unitor-r' {B' = B'} = to-natural-iso' ni where
+  open Displayed B'
+  open DR B'
+  ni : make-natural-iso[ _ ] _ _
+  ni .eta' x' = NT' (λ _ → id') λ _ _ _ → id-comm-sym[]
+  ni .inv' x' = NT' (λ _ → id') λ _ _ _ → id-comm-sym[]
+  ni .eta∘inv' x' = Nat'-path λ x'' → idl' _
+  ni .inv∘eta' x' = Nat'-path λ x'' → idl' _
+  ni .natural' x' y' f' = Nat'-path λ x'' → cast[] $ (idl' _ ∙[] symP (idr' _ ∙[] ((y' .F-id' ⟩∘'⟨refl) ∙[] idl' _)))
+  
+Displayed-cat o ℓ o' ℓ' .associator' {C' = C'} {D' = D'} = to-natural-iso' ni where
+  open Displayed D'
+  open DR D'
+  module C' = Displayed C'
+  ni : make-natural-iso[ _ ] _ _ 
+  ni .eta' x' = NT' (λ _ → id') λ _ _ _ → id-comm-sym[]
+  ni .inv' x' = NT' (λ _ → id') λ _ _ _ → id-comm-sym[]
+  ni .eta∘inv' x' = Nat'-path (λ _ → idl' _)
+  ni .inv∘eta' x' = Nat'-path (λ _ → idl' _)
+  ni .natural' (x₁ , x₂ , x₃) (y₁ , y₂ , y₃) (α₁ , α₂ , α₃) = Nat'-path λ z → cast[] $
+    (idl' _ ∙[] symP (pushl[] _ (y₁ .F-∘')) ∙[] symP (idr' _))
+
+Displayed-cat o ℓ o' ℓ' .triangle' {B' = B'} {C' = C'} f' g' = Nat'-path λ x' → C'.idr' _ where
+  module C' = Displayed C'
+Displayed-cat o ℓ o' ℓ' .pentagon' {B' = B'} {C' = C'} {D' = D'} {E' = E'} f' g' h' i' = Nat'-path λ x' → cast[] $
+  (f' .F₁' (g' .F₁' (h' .F₁' B'.id')) ∘' id') ∘' (id' ∘' f' .F₁' D'.id' ∘' id') ≡[]⟨ idr' _ ⟩∘'⟨ idl' _ ⟩
+  (f' .F₁' (g' .F₁' (h' .F₁' B'.id'))) ∘' (f' .F₁' D'.id' ∘' id') ≡[]⟨ ((apd (λ _ z → f' .F₁' (g' .F₁' z)) (h' .F-id')) ⟩∘'⟨ (idr' _)) ⟩ 
+  (f' .F₁' (g' .F₁' C'.id')) ∘' (f' .F₁' D'.id') ≡[]⟨ ((apd (λ _ → f' .F₁') (g' .F-id') ∙[] f' .F-id') ⟩∘'⟨ f' .F-id') ⟩
+  id' ∘' id' ∎
+  where
+    open Displayed E'
+    open DR E'
+    module B' = Displayed B'
+    module C' = Displayed C'
+    module D' = Displayed D' 

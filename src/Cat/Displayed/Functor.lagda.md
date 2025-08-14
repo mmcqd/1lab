@@ -503,8 +503,8 @@ module
     (G' : Displayed-functor G ℰ ℱ)
     : Type lvl
     where
-    no-eta-equality
     constructor NT'
+    no-eta-equality
 
     field
       η' : ∀ {x} (x' : ℰ.Ob[ x ]) → ℱ.Hom[ α .η x ] (F' .F₀' x') (G' .F₀' x')
@@ -522,6 +522,8 @@ vertical.
 
 <!--
 ```agda
+{-# INLINE NT' #-}
+
 module _
   {oa ℓa ob ℓb od ℓd oe ℓe}
   {A : Precategory oa ℓa} {B : Precategory ob ℓb}
@@ -539,28 +541,34 @@ module _
   open _=[_]=>_
   open Displayed-functor
 
-  Nat'-pathp : ∀ {F₁ F₂ G₁ G₂ : Functor A B} 
-                → {F₁' : Displayed-functor F₁ D E} 
-                → {G₁' : Displayed-functor G₁ D E}
-                → {F₂' : Displayed-functor F₂ D E}
-                → {G₂' : Displayed-functor G₂ D E}
-                → {α : F₁ => G₁} {β : F₂ => G₂}
-                → {α' : F₁' =[ α ]=> G₁'} {β' : F₂' =[ β ]=> G₂'}
-                → (p : F₁ ≡ F₂) (q : G₁ ≡ G₂) 
-                → (r : PathP (λ i → p i => q i) α β)
-                → (p' : PathP (λ i → Displayed-functor (p i) D E) F₁' F₂')
-                → (q' : PathP (λ i → Displayed-functor (q i) D E) G₁' G₂')
-                → (∀ {x} (x' : D.Ob[ x ]) → PathP (λ i → E.Hom[ (r i .η x) ] (p' i .F₀' x') (q' i .F₀' x')) (α' .η' x') (β' .η' x'))
-                → PathP (λ i → (p' i) =[ r i ]=> (q' i)) α' β'
+  Nat'-pathp : {F₁ F₂ G₁ G₂ : Functor A B} 
+             → {F₁' : Displayed-functor F₁ D E} 
+             → {G₁' : Displayed-functor G₁ D E}
+             → {F₂' : Displayed-functor F₂ D E}
+             → {G₂' : Displayed-functor G₂ D E}
+             → {α : F₁ => G₁} {β : F₂ => G₂}
+             → {α' : F₁' =[ α ]=> G₁'} {β' : F₂' =[ β ]=> G₂'}
+             → (p : F₁ ≡ F₂) (q : G₁ ≡ G₂) 
+             → (r : PathP (λ i → p i => q i) α β)
+             → (p' : PathP (λ i → Displayed-functor (p i) D E) F₁' F₂')
+             → (q' : PathP (λ i → Displayed-functor (q i) D E) G₁' G₂')
+             → (∀ {x} (x' : D.Ob[ x ]) → PathP (λ i → E.Hom[ (r i .η x) ] (p' i .F₀' x') (q' i .F₀' x')) (α' .η' x') (β' .η' x'))
+             → PathP (λ i → (p' i) =[ r i ]=> (q' i)) α' β'
   Nat'-pathp p q r p' q' w i .η' x' = w x' i
   Nat'-pathp {α' = α'} {β' = β'} p q r p' q' w i .is-natural' {x = x} {y} {f} x' y' f' j = 
     is-set→squarep {A = λ i j → E.Hom[ r i .is-natural x y f j ] (F₀' (p' i) x') (F₀' (q' i) y')} (λ _ _ → hlevel 2)
       (λ i → w y' i E.∘' F₁' (p' i) f') (λ j → is-natural' α' x' y' f' j) (λ j → is-natural' β' x' y' f' j) (λ i → F₁' (q' i) f' E.∘' w x' i) i j
 
+  Nat'-path : {F G : Functor A B} {F' : Displayed-functor F D E} {G' : Displayed-functor G D E}
+           → {α β : F => G} {α' : F' =[ α ]=> G'} {β' : F' =[ β ]=> G'} 
+           → {p : α ≡ β}
+           → (∀ {x} (x' : D.Ob[ x ]) → α' .η' x' E.≡[ p ηₚ x ] β' .η' x')
+           → PathP (λ i → F' =[ p i ]=> G') α' β'
+  Nat'-path = Nat'-pathp refl refl _ refl refl
 
   idnt' : ∀ {F : Functor A B} {F' : Displayed-functor F D E} → F' =[ idnt ]=> F'
   idnt' .η' x' = E.id'
-  idnt' .is-natural' x' y' f' = to-pathp E.id-comm[]
+  idnt' .is-natural' x' y' f' = E.id-comm-sym[]
 
   _∘nt'_ : ∀ {F G H : Functor A B} 
           → {F' : Displayed-functor F D E} 
@@ -638,7 +646,7 @@ module _
 
   idnt↓ : ∀ {F} → F =>↓ F
   idnt↓ .η' x' = ℱ.id'
-  idnt↓ .is-natural' x' y' f' = to-pathp (DR.id-comm[] ℱ)
+  idnt↓ .is-natural' x' y' f' = DR.id-comm-sym[] ℱ
 
   _∘nt↓_ : ∀ {F G H} → G =>↓ H → F =>↓ G → F =>↓ H
   (f ∘nt↓ g) .η' x' = f .η' _ ℱ↓.∘ g .η' x'

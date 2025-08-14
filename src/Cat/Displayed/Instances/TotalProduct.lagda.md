@@ -135,19 +135,6 @@ module _
     F₁' (A'.id' A'.∘' A'.id' , f' B'.∘' g')   C'.≡[]⟨ apd (λ _ e → F₁' (e , f' B'.∘' g')) (A'.idl' _) ⟩
     F₁' (A'.id' , f' B'.∘' g')                ∎
 
-  -- first∘second' : ∀ {a b x y a' b' x' y'} {f : A.Hom a b} {g : B.Hom x y}
-  --                 → {f' : A'.Hom[ f ] a' b'} {g' : B'.Hom[ g ] x' y'}
-  --                 → first' f' C'.∘' second' g'
-  --                 C'.≡[ first∘second ]
-  --                   second' g' C'.∘' first' f'
-  -- first∘second' {f' = f'} {g' = g'} = C'.cast[] $ {!   !}
-    -- F₁' (f' , B'.id') C'.∘' F₁' (A'.id' , g') C'.≡[]⟨ symP F-∘' ⟩
-    -- F₁' (f' A'.∘' A'.id' , B'.id' B'.∘' g') C'.≡[]⟨ apd₂ (λ x y → F₁' (x , y))
-    --   (A'.idr' _ ∙P symP (A'.idl' _))
-    --   (B'.idl' _ ∙P symP (B'.idr' _)) ⟩
-    -- F₁' (A'.id' A'.∘' f' , g' B'.∘' B'.id') C'.≡[]⟨ F-∘' _ _ ⟩
-    -- F₁' (A'.id' , g') C'.∘' F₁' (f' , B'.id') ∎
-
   Left' : ∀ {y} → B'.Ob[ y ] → Displayed-functor (Left y) A' C'
   Left' y' .F₀' x' = F₀' (x' , y')
   Left' y' .F₁' = first'
