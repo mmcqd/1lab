@@ -11,6 +11,7 @@ open import Cat.Displayed.Morphism
 open import Cat.Displayed.Functor.Naturality
 import Cat.Displayed.Reasoning as DR
 
+-- Some reference taken from https://arxiv.org/pdf/1903.01152
 module Cat.Bi.Displayed.Base where
 
 open Functor
@@ -141,7 +142,7 @@ record Bidisplayed {o oh ℓh} (B : Prebicategory o oh ℓh) o' oh' ℓh' : Type
   _◀'_ β' g' = compose'.₁' (β' , ⇒id')
 
 
-  -- Displayed unitor and associator isomorphisms
+  -- Displayed unitor and associator isos
   field
     unitor-l' : ∀ {A B} {A' : Ob[ A ]} {B' : Ob[ B ]} → _≅[_]_ Disp[ Hom[ A' , B' ] , Hom[ A' , B' ] ] Id' unitor-l (Right' compose' ↦id')
     unitor-r' : ∀ {A B} {A' : Ob[ A ]} {B' : Ob[ B ]} → _≅[_]_ Disp[ Hom[ A' , B' ] , Hom[ A' , B' ] ] Id' unitor-r (Left'  compose' ↦id')
