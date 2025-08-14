@@ -559,6 +559,37 @@ _Iso[]⁻¹
 (i' Iso[]⁻¹) .from' = i' .to'
 (i' Iso[]⁻¹) .inverses' .Inverses[_].invl' = i' .invr'
 (i' Iso[]⁻¹) .inverses' .Inverses[_].invr' = i' .invl'
+
+
+
+-- record make-natural-iso[_] : Type where
+--   no-eta-equality
+--   field
+--     eta' : ∀ {x} {x' : Ob[ x ]} → Hom[ η 
+
+  -- record make-natural-iso (F G : Functor C D) : Type (o ⊔ ℓ ⊔ ℓ') where
+  --   no-eta-equality
+  --   field
+  --     eta : ∀ x → D.Hom (F .F₀ x) (G .F₀ x)
+  --     inv : ∀ x → D.Hom (G .F₀ x) (F .F₀ x)
+  --     eta∘inv : ∀ x → eta x D.∘ inv x ≡ D.id
+  --     inv∘eta : ∀ x → inv x D.∘ eta x ≡ D.id
+  --     natural : ∀ x y f → G .F₁ f D.∘ eta x ≡ eta y D.∘ F .F₁ f
+
+  -- open make-natural-iso
+
+  -- to-natural-iso : ∀ {F G} → make-natural-iso F G → F ≅ⁿ G
+  -- {-# INLINE to-natural-iso #-}
+  -- to-natural-iso {F = F} {G = G} mk =
+  --   let to = record { η = mk .eta ; is-natural = λ x y f → sym (mk .natural x y f) } in
+  --   record
+  --     { to = to
+  --     ; from = record
+  --       { η = mk .inv
+  --       ; is-natural = inverse-is-natural {F} {G} to (mk .inv) (mk .eta∘inv) (mk .inv∘eta) }
+  --     ; inverses = record
+  --       { invl = ext (mk .eta∘inv)
+  --       ; invr = ext (mk .inv∘eta) } }
 ```
 -->
 
@@ -702,5 +733,7 @@ module _
     → f'.section' ∘' h₁' ≡[ p ] h₂'
     → h₁' ≡[ post-section f-section p ] f' ∘' h₂'
   post-section[] = post-section'
+
+
 ```
 -->

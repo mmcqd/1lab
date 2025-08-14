@@ -1,5 +1,6 @@
 <!--
 ```agda
+open import Cat.Displayed.Cartesian.Discrete
 open import Cat.Displayed.Cartesian.Indexing
 open import Cat.Displayed.Instances.Slice
 open import Cat.Displayed.Cartesian

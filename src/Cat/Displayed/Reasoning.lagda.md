@@ -692,4 +692,9 @@ abstract
     → h' ∘' f' ≡[ q ] id'
     → g' ∘' f' ≡[ rswizzle p q ] i'
   rswizzle[] {f' = f'} p q p' q' = rswizzle' p q p' q'
+
+
+id2' : ∀ {a} {x : Ob[ a ]} → id' {x = x} ∘' id'  ≡[ id2 ] id'
+id2' = cast[] (idl' id')
+
 ```

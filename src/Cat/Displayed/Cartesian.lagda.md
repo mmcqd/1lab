@@ -258,6 +258,8 @@ record Cartesian-morphism
   field
     hom' : Hom[ f ] x' y'
     cartesian : is-cartesian f hom'
+
+  open is-cartesian cartesian public
 ```
 
 <!--
@@ -687,7 +689,6 @@ module Cartesian-fibration (fib : Cartesian-fibration) where
 
 <!--
 ```agda
-
   module _ {x y} (f : Hom x y) (y' : Ob[ y ]) where
     open Cartesian-lift (fib f y')
       using ()

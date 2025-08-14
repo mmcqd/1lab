@@ -6,6 +6,7 @@ open import Cat.Displayed.Functor
 open import Cat.Displayed.Total
 open import Cat.Displayed.Base
 open import Cat.Prelude
+open import Cat.Displayed.Instances.Pullback
 
 import Cat.Displayed.Reasoning as DR
 ```
@@ -171,6 +172,26 @@ universal.
     ℰ∘ℱ-disc .cart-lift f (y' , y'') = Equiv→is-hlevel 0 (Σ-swap-Σ e⁻¹) (Σ-is-hlevel 0 (ℰ.cart-lift f y') λ (x' , f') → ℱ.cart-lift (∫hom f f') y'') 
 
 
+
+module _
+  {ob ℓb oe ℓe of ℓf og ℓg ok ℓk}
+  {B : Precategory ob ℓb} 
+  {ℰ : Displayed B oe ℓe} {ℱ : Displayed B of ℓf}
+  {𝒢 : Displayed (∫ ℰ) og ℓg} {ℋ : Displayed (∫ ℱ) ok ℓk}
+  (F : Vertical-functor ℰ ℱ)
+  (F' : Displayed-functor (∫ᶠ F) 𝒢 ℋ)
+  where
+
+  private
+    module F = Displayed-functor F
+    module F' = Displayed-functor F'
+
+  D∘⟨_,_⟩ : Vertical-functor (ℰ D∘ 𝒢) (ℱ D∘ ℋ)
+  D∘⟨_,_⟩ .Displayed-functor.F₀' (x' , x'') = F.₀' x' , F'.₀' x''
+  D∘⟨_,_⟩ .Displayed-functor.F₁' (f' , f'') = F.₁' f' , F'.₁' f''
+  D∘⟨_,_⟩ .Displayed-functor.F-id' = F.F-id' ,ₚ F'.F-id'
+  D∘⟨_,_⟩ .Displayed-functor.F-∘' = F.F-∘' ,ₚ F'.F-∘'
+
 module _
   {ob ℓb oe ℓe og ℓg ok ℓk}
   {B : Precategory ob ℓb} 
@@ -187,6 +208,20 @@ module _
   D∘⟨-,_⟩ .Displayed-functor.F₁' (f , f'') = f , F.F₁' f''
   D∘⟨-,_⟩ .Displayed-functor.F-id' = refl ,ₚ F.F-id'
   D∘⟨-,_⟩ .Displayed-functor.F-∘' = refl ,ₚ F.F-∘'
+
+
+module _
+  {ob ℓb oe ℓe og ℓg}
+  {B : Precategory ob ℓb} 
+  {ℰ : Displayed B oe ℓe} 
+  {𝒢 : Displayed (∫ ℰ) og ℓg} 
+  where
+
+  Shift : Functor (∫ (ℰ D∘ 𝒢)) (∫ 𝒢)
+  Shift .Functor.F₀ (x , (x' , x'')) = (x , x') , x''
+  Shift .Functor.F₁ (∫hom f (f' , f'')) = ∫hom (∫hom f f') f''
+  Shift .Functor.F-id = refl
+  Shift .Functor.F-∘ _ _ = refl
 
 
 ```
