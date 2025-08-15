@@ -4,7 +4,7 @@ open import Cat.Displayed.Base
 open import Cat.Prelude
 
 import Cat.Displayed.Reasoning as DR
-import Cat.Displayed.Morphism
+import Cat.Displayed.Morphism as DM
 import Cat.Reasoning
 ```
 -->
@@ -15,7 +15,7 @@ module Cat.Displayed.Cartesian
 
 open Cat.Reasoning B
 open Displayed E
-open Cat.Displayed.Morphism E
+open DM E
 open DR E
 ```
 

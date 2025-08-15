@@ -23,7 +23,7 @@ open import Cat.Diagram.Terminal
 open import Cat.Displayed.Instances.Identity
 open import Cat.Displayed.Instances.Lift
 open import Cat.Displayed.Instances.Lifting
-open import Cat.Instances.StrictCat
+import Cat.Displayed.Morphism as DM
 
 module Cat.Displayed.Cartesian.DFib where
 
@@ -155,32 +155,32 @@ module _
     (F ^*) .F-id = DFib-functor-pathp refl (λ _ → refl) (λ _ → refl)
     (F ^*) .F-∘ _ _ = DFib-functor-pathp refl (λ _ → refl) (λ _ → refl)
 
-    ^*-natural : {F G : Functor B A} → G => F → F ^* => G ^*
-    ^*-natural {F} {G} n .η E = hom H where
-      module F = Functor F
-      module G = Functor G
-      module n = _=>_ n
+  ^*-natural : {F G : Functor B A} → G => F → F ^* => G ^*
+  ^*-natural {F} {G} n .η E = hom H where
+    module F = Functor F
+    module G = Functor G
+    module n = _=>_ n
+    module E = DFib-Ob E
+    H : Vertical-functor ((F ^*) .F₀ E .fst) ((G ^*) .F₀ E .fst)
+    H .F₀' {x} x' = (n.η x) E.^* x'
+    H .F₁' {a = a} {b} {f} {a'} {b'} f' = E.^*-hom _ (
+        G.₁ f E.^* (n.η b E.^* b') ≡˘⟨ E.^*-∘ _ _ _ ⟩ 
+        ⌜ n.η b A.∘ G.₁ f ⌝ E.^* b' ≡⟨ ap! (n.is-natural _ _ _) ⟩ 
+        (F.₁ f A.∘ n.η a) E.^* b' ≡⟨ E.^*-∘ _ _ _ ⟩
+        n.η a E.^* ⌜ F.₁ f E.^* b' ⌝ ≡⟨ ap! (E.^*-lift _ f') ⟩
+        n.η a E.^* a' ∎       
+      )
+    H .F-id' = prop!
+    H .F-∘' = prop!
+  ^*-natural n .is-natural D E f = 
+    DFib-functor-pathp refl 
+      (λ x' → E.^*-lift _ (f.₁' (D.π* _ x')))
+      (λ _ → is-prop→pathp (λ _ → hlevel 1) _ _)
+    where
+      module D = DFib-Ob D
       module E = DFib-Ob E
-      H : Vertical-functor ((F ^*) .F₀ E .fst) ((G ^*) .F₀ E .fst)
-      H .F₀' {x} x' = n.η x E.^* x'
-      H .F₁' {a = a} {b} {f} {a'} {b'} f' = E.^*-hom _ (
-          G.₁ f E.^* (n.η b E.^* b') ≡˘⟨ E.^*-∘ _ _ _ ⟩ 
-          ⌜ n.η b A.∘ G.₁ f ⌝ E.^* b' ≡⟨ ap! (n.is-natural _ _ _) ⟩ 
-          (F.₁ f A.∘ n.η a) E.^* b' ≡⟨ E.^*-∘ _ _ _ ⟩
-          n.η a E.^* ⌜ F.₁ f E.^* b' ⌝ ≡⟨ ap! (E.^*-lift _ f') ⟩
-          n.η a E.^* a' ∎       
-        )
-      H .F-id' = prop!
-      H .F-∘' = prop!
-    ^*-natural n .is-natural D E f = 
-      DFib-functor-pathp refl 
-        (λ x' → E.^*-lift _ (f.₁' (D.π* _ x')))
-        (λ _ → is-prop→pathp (λ _ → hlevel 1) _ _)
-      where
-        module D = DFib-Ob D
-        module E = DFib-Ob E
-        module n = _=>_ n
-        module f = DFib-functor f
+      module n = _=>_ n
+      module f = DFib-functor f
 
 
 
@@ -301,12 +301,13 @@ module _
   is-representable : (A : DFib𝒮.Ob) → DFib/.Ob[ A ] → Type _
   is-representable A A' = Σ[ δ ∈ Functor (∫ A) (∫ A') ] πᶠ A' ⊣ δ
 
-  is-representable' : ∀ {A B} → DFib𝒮.Hom A B → Type _
-  is-representable' {A} {B} f = Σ[ δ ∈ Functor (∫ B) (∫ A) ] ∫ᶠ f ⊣ δ
-   
-module DFib/ {o ℓ} (𝒮 : Precategory o ℓ) o' ℓ' where
+module Make-DFib/ {o ℓ} (𝒮 : Precategory o ℓ) o' ℓ' where
   open Displayed (DFib/ 𝒮 o' ℓ') public
   open Cartesian-fibration (DFib/ 𝒮 o' ℓ') DFib/-cartesian public
+  open DM (DFib/ 𝒮 o' ℓ') public
+
+
+
 
 
 {-

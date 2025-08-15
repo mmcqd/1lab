@@ -18,7 +18,8 @@ open import Cat.Functor.Compose
 open import Cat.Displayed.Comprehension
 open import Cat.Displayed.Instances.Slice
 open import Cat.Instances.Slice
-
+open import Cat.Instances.Product
+open import Cat.Instances.Functor
 
 module CwF where
 
@@ -64,12 +65,11 @@ record CwF oc ℓc ot ℓt : Type (lsuc (oc ⊔ ℓc ⊔ ot ⊔ ℓt)) where
 
   module 𝒞 = Cat.Reasoning 𝒞
   module DFib𝒞 = Cat.Reasoning DFib𝒞
-  module DFib𝒞⊤ = Terminal (DFib-terminal 𝒞 ot ℓt)
-  module DFib𝒞/ = DFib/ 𝒞 ot ℓt
+  module DFib/ {o ℓ} {A : Precategory o ℓ} = Make-DFib/ A ot ℓt
 
   field
     Tp : DFib𝒞.Ob
-    Chk : DFib𝒞/.Ob[ Tp ]
+    Chk : DFib/.Ob[ Tp ]
 
   Syn : DFib𝒞.Ob
   Syn = DFibΣ Tp Chk
@@ -87,52 +87,40 @@ record CwF oc ℓc ot ℓt : Type (lsuc (oc ⊔ ℓc ⊔ ot ⊔ ℓt)) where
   Ext𝒞 : Functor (∫ Tp) 𝒞
   Ext𝒞 = (πᶠ Tp F∘ πᶠ Chk) F∘ Extend
 
-  -- P : ∀ {A : DFib𝒞.Ob} {B} → Functor (∫ A) B → Functor {! ∫ A   !} {!   !}
-  -- P f .F₀ x = {!   !}
-  -- P f .F₁ = {!   !}
-  -- P f .F-id = {!   !}
-  -- P f .F-∘ = {!   !} 
-    -- DFibΣ {!   !} ((f DFib^*) · {!   !})
-
-  -- DFibΠ : DFib𝒞.Ob → DFib𝒞/.Ob[ Tp ]
-  -- DFibΠ x = (Ext𝒞 DFib^*) · x
-
-  -- In Uemura's paper, (A ≡ SynData) and (B ≡ TpData)
-  TpFam : DFib𝒞.Ob
-  TpFam = DFibΣ Tp ((Ext𝒞 DFib^*) · Tp)
-
-
-  πTp : DFib𝒞.Hom TpFam Tp 
-  πTp = hom πᵈ
-
-  ChkFam : DFib𝒞/.Ob[ TpFam ]
-  ChkFam = ((∫ᶠ' (Change-of-base-functor Ext𝒞 (Tp .fst)) F∘ Shift) DFib^*) · Chk
-
-  TpΛ : Type _
-  TpΛ = DFib𝒞.Hom TpFam Tp 
-
-  ChkΛ : TpΛ → Type _
-  ChkΛ Λ = Cartesian-morphism (DFib/ 𝒞 ot ℓt) Λ ChkFam Chk 
+  open _⊣_ (ExtensionData .snd) hiding (η ; ε) public
 
   module Tp = DFib-Ob Tp
   module Chk = DFib-Ob Chk
   module Syn = DFib-Ob Syn 
   module Extend = Functor Extend
   
-  open _⊣_ (ExtensionData .snd) hiding (η ; ε) public
+  Tp/ : DFib/.Ob[ Tp ]
+  Tp/ = (Ext𝒞 DFib^*) · Tp
+
+  -- In Uemura's paper, (A ≡ SynData) and (B ≡ TpData)
+  TpFam : DFib𝒞.Ob
+  TpFam = DFibΣ Tp Tp/
 
 
+  πTp : DFib𝒞.Hom TpFam Tp
+  πTp = hom πᵈ
 
+  ChkFam : DFib/.Ob[ TpFam ]
+  ChkFam = ((∫ᶠ' (Change-of-base-functor Ext𝒞 (Tp .fst)) F∘ Shift) DFib^*) · Chk
 
   unit^* : (Extend F∘ πᶠ Chk) DFib^* => Id
-  unit^* = id^* ot ℓt .to ∘nt Base-change .F₁ unit
+  unit^* = id^* ot ℓt .to ∘nt ^*-natural unit 
 
   counit^* : Id => (πᶠ Chk F∘ Extend) DFib^*
-  counit^* = (Base-change .F₁ counit) ∘nt id^* ot ℓt .from
+  counit^* = ^*-natural counit ∘nt id^* ot ℓt .from
+
+  unit-Ext𝒞 : (πᶠ Tp F∘ πᶠ Chk) => Ext𝒞 F∘ πᶠ Chk
+  unit-Ext𝒞 = NT (λ x → 𝒞.id) (λ _ _ _ → 𝒞.id-comm-sym) ∘nt ((πᶠ Tp F∘ πᶠ Chk) ▸ unit) ∘nt NT (λ x → 𝒞.id) (λ _ _ _ → 𝒞.id-comm-sym)
+
+  unit-Ext𝒞^* : (Ext𝒞 F∘ πᶠ Chk) DFib^* => (πᶠ Tp F∘ πᶠ Chk) DFib^*
+  unit-Ext𝒞^* = ^*-natural {o' = ot} {ℓ' = ℓt} unit-Ext𝒞
 
 
-  -- InstTp : DFib-functor Id _ _  -- DFib𝒞.Hom TpFamArg Tp
-  -- InstTp = Base-change .F₁ ((πᶠ Tp F∘ πᶠ Chk) ▸ unit) .η Tp
 
   module Syntax where
     Ctx : Type _
@@ -203,6 +191,9 @@ record CwF oc ℓc ot ℓt : Type (lsuc (oc ⊔ ℓc ⊔ ot ⊔ ℓt)) where
     keep-id : ∀ {Γ Δ} {A : Tp ʻ Δ} (γ : Sub Γ Δ) → Sub (Γ ⨾ (A [ γ ])) (Δ ⨾ A)
     keep-id γ = keep γ (Tp.π* _ _)
 
+    tp-[] : ∀ {Γ Δ} {A : Tp ʻ Δ} {γ : Sub Γ Δ} → A [ γ ]≡ A [ γ ]
+    tp-[] = Tp.π* _ _
+
     π : ∀ {Γ} {A : Tp ʻ Γ} → Sub (Γ ⨾ A) Γ
     π {Γ} {A} = counit.ε (Γ , A) .fst
 
@@ -221,25 +212,24 @@ record CwF oc ℓc ot ℓt : Type (lsuc (oc ⊔ ℓc ⊔ ot ⊔ ℓt)) where
       → var A [ inst x , inst-tp x ]≡ x
     inst-chk {Γ = Γ} {A = A} x = unit.η ((Γ , A) , x) .snd
 
+  open Syntax
+  -- unit-Ext𝒞^* .η Tp
+  foo : Functor _ _
+  foo .F₀ ((Γ , A , B) , x) = (Γ , B [ inst x ]) --unit-Ext𝒞^* .η Tp .F₀' {x = (Γ , A) , x} B)
+  foo .F₁ (∫hom (∫hom γ γ') γ'') = ∫hom γ {!   !}
+  foo .F-id = {!   !}
+  foo .F-∘ = {!   !}
 
-    -- Comprehend : Vertical-functor (Syn .fst) (Slices 𝒞)
-    -- Comprehend .F₀' {Γ} (A , x) = cut {domain = Γ ⨾ A} π
-    -- Comprehend .F₁' (γ , γ') = slice-hom (keep _ γ) (sym $ ap fst $ counit.is-natural _ _ _)
-    -- Comprehend .F-id' = Slice-path _ (ap (fst ⊙ fst) $ Extend .F-id)
-    -- Comprehend .F-∘' = Slice-path _ (ap (fst ⊙ fst) $ Extend .F-∘ _ _)
+  ChkPair : DFib/.Ob[ TpFam ]
+  ChkPair = DFibΣ (πTp DFib/.^* Chk) ((foo DFib^*) · Chk)
 
-    -- ComprehendTp : Vertical-functor (Tp .fst) (Slices 𝒞)
-    -- ComprehendTp .F₀' {Γ} A = cut {domain = Γ ⨾ A} π
-    -- ComprehendTp .F₁' {a} {b} {f} {a'} {b'} γ = slice-hom (keep _ γ) (sym $ ap fst $ counit.is-natural (a , a') (b , b') (∫hom f γ))
-    -- ComprehendTp .F-id' = Slice-path _ (ap (fst ⊙ fst) $ Extend .F-id)
-    -- ComprehendTp .F-∘' = Slice-path _ (ap (fst ⊙ fst) $ Extend .F-∘ _ _)
+  TpΛ : Type _
+  TpΛ = DFib𝒞.Hom TpFam Tp 
 
-    -- ComprehendChk : Vertical-functor (Chk .fst) (Slices (∫ Tp))
-    -- ComprehendChk .F₀' {Γ , A} x = cut (∫hom π π-tp)
-    -- ComprehendChk .F₁' {f = ∫hom f f'} γ = slice-hom (∫hom (keep f f') (keep-tp f f')) (sym $ counit.is-natural _ _ _)
-    -- ComprehendChk .F-id' = Slice-path _ (ap fst $ Extend .F-id)
-    -- ComprehendChk .F-∘' = Slice-path _ (ap fst $ Extend .F-∘ _ _)
+  ChkΛ : TpΛ → Type _
+  ChkΛ Λ = Cartesian-morphism (DFib/ 𝒞 ot ℓt) Λ ChkFam Chk
 
+ 
 
 
 record PiStructure {oc ℓc ot ℓt} (C : CwF oc ℓc ot ℓt) : Type (lsuc (ot ⊔ ℓt) ⊔ oc ⊔ ℓc) where
@@ -247,95 +237,45 @@ record PiStructure {oc ℓc ot ℓt} (C : CwF oc ℓc ot ℓt) : Type (lsuc (ot 
   open Syntax
   field
     Pi : TpΛ
-    LamData : ChkΛ Pi
-
-  Lam : DFib𝒞/.Hom[ Pi ] ChkFam Chk
-  Lam = LamData .Cartesian-morphism.hom'
-
+    Lam : ChkΛ Pi
 
   module Pi = DFib-functor Pi
-  module Lam where
-    open DFib-functor Lam public
-    open Cartesian-morphism LamData public
-  
-  
-  open Displayed-functor
-  open Functor
-  -- open _=>_
+  module LamData = Cartesian-morphism Lam
+
+ -- The fibration of terms with Pi types
+  ChkPi : DFib/.Ob[ TpFam ]
+  ChkPi = Pi DFib/.^* Chk
+
+  [λ] : ChkFam DFib/.≅↓ ChkPi 
+  [λ] = cartesian-domain-unique _ LamData.cartesian DFib/.π*.cartesian
+
+  module [λ] = DFib/._≅[_]_ [λ] 
+
+  Π : ∀ {Γ} (A : Tp ʻ Γ) (B : Tp ʻ (Γ ⨾ A)) → Tp ʻ Γ
+  Π A B = Pi.₀' (A , B)
+
+  lam : ∀ {Γ} {A : Tp ʻ Γ} {B : Tp ʻ (Γ ⨾ A)} (x : Chk ʻ (Γ ⨾ A , B)) → Chk ʻ (Γ , Π A B)
+  lam x = [λ].to' .F₀' x
+
+  unlam : ∀ {Γ} {A : Tp ʻ Γ} {B : Tp ʻ (Γ ⨾ A)} (f : Chk ʻ (Γ , Π A B)) → Chk ʻ (Γ ⨾ A , B)
+  unlam f = [λ].from' .F₀' f
+
+  lam-β : ∀ {Γ} {A : Tp ʻ Γ} {B : Tp ʻ (Γ ⨾ A)} {x : Chk ʻ (Γ ⨾ A , B)} → unlam (lam x) ≡ x
+  lam-β {x = x} = apd (λ _ z → z .F₀' x) [λ].invr'
+
+  lam-η : ∀ {Γ} {A : Tp ʻ Γ} {B : Tp ʻ (Γ ⨾ A)} {f : Chk ʻ (Γ , Π A B)} → lam (unlam f) ≡ f
+  lam-η {f = f} = apd (λ _ z → z .F₀' f) [λ].invl'
+
+  Π-[] : ∀ {Γ Δ} {γ : Sub Δ Γ} {A : Tp ʻ Γ} {B : Tp ʻ (Γ ⨾ A)} → Π A B [ γ ]≡ Π (A [ γ ]) (B [ keep-id γ ])
+  Π-[] = Pi.₁' (Tp.π* _ _ , Tp.π* _ _)
+
+  lam-[] : ∀ {Γ Δ} {γ : Sub Δ Γ} {A : Tp ʻ Γ} {B : Tp ʻ (Γ ⨾ A)} {x : Chk ʻ (Γ ⨾ A , B)} → lam x [ γ , Π-[] ]≡ lam (x [ keep-id γ , Tp.π* _ _ ])
+  lam-[] = [λ].to' .F₁' (Chk.π* _ _)
 
 
-  -- The fibration of terms with Pi types
-  ChkPi : DFib𝒞/.Ob[ TpFam ]
-  ChkPi = Pi DFib𝒞/.^* Chk
-
-  -- Embedding of Pi terms in to terms
-  EmbedPi : DFib𝒞/.Hom[ Pi ] ChkPi Chk
-  EmbedPi = DFib𝒞/.π* Pi Chk
-
-  -- Turn a Pi term back into a term family
-  Unlam : DFib𝒞/.Hom[ DFib𝒞.id {TpFam} ] ChkPi ChkFam
-  Unlam = Lam.universalv EmbedPi
-
-
-  -- lam (unlam x) ≡ x
-  Lam-η : (DFib𝒞/._∘'_ {a = TpFam} {b = TpFam} {c = Tp} Lam Unlam) DFib𝒞/.≡[ DFib𝒞.idr Pi ] EmbedPi
-  Lam-η = Lam.commutesv EmbedPi
-
-
-  -- The fibration of type families and arguments to subsitute
-  TpFamArg : DFib𝒞.Ob
-  TpFamArg = DFibΣ TpFam (πTp DFib𝒞/.^* Chk)
-
-  InstTp : DFib𝒞.Hom TpFamArg Tp
-  InstTp .fun .F₀' {Γ} ((A , B) , x) = B [ inst x ]
-    -- Base-change .F₁ unit .η (((πᶠ Tp F∘ πᶠ Chk) DFib^*) · Tp) .F₀' B 
-  InstTp .fun .F₁' ((γ , γ') , σ) = Base-change .F₁ unit .η (((πᶠ Tp F∘ πᶠ Chk) DFib^*) · Tp) .F₁' {f = ∫hom _ σ} γ'
-  InstTp .fun .F-id' = is-prop→pathp (λ _ → hlevel 1) _ _
-  InstTp .fun .F-∘' = is-prop→pathp (λ _ → hlevel 1) _ _
-
-  -- The fibration of terms with Pi types and an argument
-  ChkApp : DFib𝒞/.Ob[ TpFam ]
-  ChkApp = ChkPi DFib× (πTp DFib𝒞/.^* Chk)
-
-  Inst : DFib𝒞/.Hom[ InstTp ] {!   !} Chk
-  Inst = {!   !}
-
-
---  unit^* .η (((πᶠ Tp F∘ πᶠ Chk) DFib^*) · Tp)
-
-
-
-  -- Base-change .F₁ ? .η ?
-
-
-  -- FamArg : DFib𝒞.Ob
-  -- FamArg = DFibΣ TpFam (ChkFam DFib× (πTp DFib𝒞/.^* Chk))
-
-
-
-  -- Inst : DFib𝒞.Hom TpFam Tp
-  -- Inst = {!   !}
-
-  -- Lam-β : Functor (∫ ChkApp) (∫ Chk)
-  -- Lam-β .F₀ ((Γ , A , B) , (f , x)) = {!   !} , {!   !}
-  -- Lam-β .F₁ = {!   !}
-  -- Lam-β .F-id = {!   !}
-  -- Lam-β .F-∘ = {!   !}
-
-  -- Π : ∀ {Γ} (A : Tp Γ) (B : Tp (Γ ⨾ A)) → Tp Γ
-  -- Π A B = Pi.₀' (A , B)
-
-  -- lam : ∀ {Γ} {A : Tp Γ} {B : Tp (Γ ⨾ A)} → Chk (Γ ⨾ A) B → Chk Γ (Π A B)
-  -- lam x = Lam.₀' x
-
-
-  -- module Unlam = DFib-functor Unlam
-
-  -- unlam : ∀ {Γ} {A : Tp Γ} {B : Tp (Γ ⨾ A)} (f : Chk Γ (Π A B)) → Chk (Γ ⨾ A) B
-  -- unlam f = Unlam.₀' f
-
-
-  -- lam-η : ∀ {Γ} {A : Tp Γ} {B : Tp (Γ ⨾ A)} {f : Chk Γ (Π A B)} → lam (unlam f) ≡ f
-  -- lam-η {f = f} = apd (λ i (hom z) → z .F₀' f) Lam-η
-
-  
+-- record SigmaStructure {oc ℓc ot ℓt} (C : CwF oc ℓc ot ℓt) : Type (lsuc (ot ⊔ ℓt) ⊔ oc ⊔ ℓc) where
+--   open CwF C
+--   open Syntax
+--   field
+--     Sigma : TpΛ
+--     Pair : DFib𝒞/.Hom[ {!   !} ] {!   !} {!   !}
