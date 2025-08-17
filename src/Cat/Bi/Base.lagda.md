@@ -154,7 +154,7 @@ whence the name **horizontal composition**.
   _∘_ {A} {B} = Hom._∘_
 
   -- horizontal 2-cell composition
-  _◆_ : ∀ {A B C} {f₁ f₂ : B ↦ C} (β : f₁ ⇒ f₂) {g₁ g₂ : A ↦ B} (α : g₁ ⇒ g₂)
+  _◆_ : ∀ {A B C} {f₁ f₂ : B ↦ C} {g₁ g₂ : A ↦ B} (β : f₁ ⇒ f₂) (α : g₁ ⇒ g₂)
       → (f₁ ⊗ g₁) ⇒ (f₂ ⊗ g₂)
   _◆_ β α = compose .Functor.F₁ (β , α)
 

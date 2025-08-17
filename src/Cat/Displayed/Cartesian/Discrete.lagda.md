@@ -111,6 +111,18 @@ conclude that $f' = f''$.
       Σ-inj-set (fibre-set _) $
       is-contr→is-prop (cart-lift f y') (x' , f') (x' , f'')
 ```
+<!--
+```agda
+    instance
+      Ob[]-set : ∀ {n x} → H-Level (Ob[ x ]) (2 + n)
+      Ob[]-set = basic-instance 2 (fibre-set _)
+      {-# OVERLAPS Ob[]-set #-}
+
+      Hom[]-prop : ∀ {n x y x' y'} {f : B.Hom x y} → H-Level (Hom[ f ] x' y') (1 + n)
+      Hom[]-prop = basic-instance 1 Hom[]-is-prop
+  
+```
+-->
 
 We can improve the previous result by noticing that morphisms
 $f' : x' \to_{f} y'$ give rise to proofs that $f^*(y') = x'$.

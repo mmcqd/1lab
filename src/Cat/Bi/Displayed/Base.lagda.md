@@ -285,6 +285,7 @@ As do the triangle and pentagon identities.
 Displayed categories naturally assemble into a displayed biacategory over $\bf{Cat}$.
 <!--
 ```agda 
+
 open Bidisplayed hiding (_∘'_)
 ```
 -->
