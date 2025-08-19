@@ -100,7 +100,7 @@ record Prebicategory o ℓ ℓ' : Type (lsuc (o ⊔ ℓ ⊔ ℓ')) where
     Ob  : Type o
     Hom : Ob → Ob → Precategory ℓ ℓ'
 
-  module Hom {A} {B} = Precategory (Hom A B)
+  module Hom {A} {B} = Cr (Hom A B)
 ```
 
 Zooming out to consider the whole bicategory, we see that each object
@@ -250,6 +250,15 @@ abbreviations here too:
            ((β ◆ (γ ◆ δ)) ∘ α→ _ _ _)
   α→nat {A} {B} {C} {D} {f} {f'} {g} {g'} {h} {h'} β γ δ =
     associator.to .is-natural (f , g , h) (f' , g' , h') (β , γ , δ)
+
+  λ≅ : ∀ {A B} (f : A ↦ B) → Cr._≅_ (Hom A B) f (id ⊗ f)
+  λ≅ = isoⁿ→iso unitor-l 
+
+  ρ≅ : ∀ {A B} (f : A ↦ B) → Cr._≅_ (Hom A B) f (f ⊗ id)
+  ρ≅ = isoⁿ→iso unitor-r
+  
+  α≅ :  ∀ {A B C D} (f : C ↦ D) (g : B ↦ C) (h : A ↦ B) → Cr._≅_ (Hom A D) ((f ⊗ g) ⊗ h) (f ⊗ (g ⊗ h))
+  α≅ f g h = isoⁿ→iso associator (f , g , h)
 ```
 
 The final data we need are coherences relating the left and right

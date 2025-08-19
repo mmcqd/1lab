@@ -15,7 +15,7 @@ open import Cat.Prelude
 
 ```agda
 module Cat.Displayed.Instances.Identity
-  {o ℓ} (B : Precategory o ℓ)
+  {o ℓ} (B : Precategory o ℓ) o' ℓ'
   where
 
 open Precategory B
@@ -31,12 +31,12 @@ $\mathrm{Id}(\cB)$ over $B$ whose [[total category]] is isomorphic to
 $B$, called the **identity bifibration**.
 
 ```agda
-IdD : Displayed B lzero lzero
-IdD .Ob[_] _ = ⊤
-IdD .Hom[_] _ _ _ = ⊤
+IdD : Displayed B o' ℓ'
+IdD .Ob[_] _ = Lift o' ⊤
+IdD .Hom[_] _ _ _ = Lift ℓ' ⊤
 IdD .Hom[_]-set _ _ _ = hlevel 2
-IdD .id' = tt
-IdD ._∘'_ _ _ = tt
+IdD .id' = lift tt
+IdD ._∘'_ _ _ = lift tt
 IdD .idr' _ = refl
 IdD .idl' _ = refl
 IdD .assoc' _ _ _ = refl
@@ -57,15 +57,15 @@ cocartesian.
 ```agda
 idd-is-cartesian
   : ∀ {x y} {f : Hom x y}
-  → is-cartesian IdD f tt
-idd-is-cartesian .is-cartesian.universal _ _ = tt
+  → is-cartesian IdD f (lift tt)
+idd-is-cartesian .is-cartesian.universal _ _ = lift tt
 idd-is-cartesian .is-cartesian.commutes _ _ = refl
 idd-is-cartesian .is-cartesian.unique _ _ = refl
 
 idd-is-cocartesian
   : ∀ {x y} {f : Hom x y}
-  → is-cocartesian IdD f (tt)
-idd-is-cocartesian .is-cocartesian.universal _ _ = tt
+  → is-cocartesian IdD f (lift tt)
+idd-is-cocartesian .is-cocartesian.universal _ _ = lift tt
 idd-is-cocartesian .is-cocartesian.commutes _ _ = refl
 idd-is-cocartesian .is-cocartesian.unique _ _ = refl
 ```
@@ -80,13 +80,13 @@ IdD-bifibration : is-bifibration IdD
 ```
 <!--
 ```agda
-IdD-fibration f y' .Cartesian-lift.x' = tt
-IdD-fibration f y' .Cartesian-lift.lifting = tt
+IdD-fibration f y' .Cartesian-lift.x' = lift tt
+IdD-fibration f y' .Cartesian-lift.lifting = lift tt
 IdD-fibration f y' .Cartesian-lift.cartesian =
   idd-is-cartesian
 
-IdD-opfibration f x' .Cocartesian-lift.y' = tt
-IdD-opfibration f x' .Cocartesian-lift.lifting = tt
+IdD-opfibration f x' .Cocartesian-lift.y' = lift tt
+IdD-opfibration f x' .Cocartesian-lift.lifting = lift tt
 IdD-opfibration f x' .Cocartesian-lift.cocartesian =
   idd-is-cocartesian
 
@@ -102,14 +102,14 @@ the [[terminal category]].
 
 ```agda
 IdDFib : ∀ x → Functor ⊤Cat (Fibre IdD x)
-IdDFib x .F₀ _ = tt
-IdDFib x .F₁ _ = tt
+IdDFib x .F₀ _ = lift tt
+IdDFib x .F₁ _ = lift tt
 IdDFib x .F-id = refl
 IdDFib x .F-∘ _ _ = refl
 
 IdD-is-iso : ∀ x → is-precat-iso (IdDFib x)
-IdD-is-iso x .is-precat-iso.has-is-ff = id-equiv
-IdD-is-iso x .is-precat-iso.has-is-iso = id-equiv
+IdD-is-iso x .is-precat-iso.has-is-ff = record { is-eqv = λ _ → hlevel 0 }
+IdD-is-iso x .is-precat-iso.has-is-iso = record { is-eqv = λ _ → hlevel 0 }
 ```
 
 ## Total category
@@ -119,8 +119,8 @@ itself.
 
 ```agda
 IdDTotal : Functor B (∫ IdD)
-IdDTotal .F₀ x = x , tt
-IdDTotal .F₁ f = ∫hom f (tt)
+IdDTotal .F₀ x = x , lift tt
+IdDTotal .F₁ f = ∫hom f (lift tt)
 IdDTotal .F-id = ∫Hom-path _ refl refl
 IdDTotal .F-∘ _ _ = ∫Hom-path _ refl refl
 

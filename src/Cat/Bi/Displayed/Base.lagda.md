@@ -4,6 +4,7 @@
 open import Cat.Displayed.Instances.DisplayedFunctor hiding (_◆'_)
 open import Cat.Displayed.Instances.TotalProduct
 open import Cat.Displayed.Functor.Naturality
+open import Cat.Displayed.Univalence
 open import Cat.Displayed.Morphism
 open import Cat.Displayed.Functor
 open import Cat.Instances.Product
@@ -13,6 +14,7 @@ open import Cat.Bi.Base
 open import Cat.Prelude
 
 import Cat.Displayed.Reasoning as DR
+import Cat.Displayed.Morphism as DM
 ```
 -->
 ```agda
@@ -92,14 +94,31 @@ The displayed objects of these displayed $\hom$ categories are the _displayed 1-
 The displayed morphims are the _displayed 2-cells_.
 ```agda
   _[_]↦_ : ∀ {A B} → Ob[ A ] → (A ↦ B) → Ob[ B ] → Type _
-  A' [ f ]↦ B' = Hom[ A' , B' ] .Displayed.Ob[_] f
-
+  A' [ f ]↦ B' = Hom[].Ob[_] {A' = A'} {B' = B'} f
 
   _[_]⇒_ : ∀ {A B} {f g : A ↦ B} 
          → {A' : Ob[ A ]} {B' : Ob[ B ]} 
          → A' [ f ]↦ B' → (f ⇒ g) → A' [ g ]↦ B'
          → Type _
-  _[_]⇒_ {A' = A'} {B' = B'} f' α g' = Hom[ A' , B' ] .Displayed.Hom[_] α f' g'
+  _[_]⇒_ {A' = A'} {B'} f' α g' = Hom[ A' , B' ] .Displayed.Hom[_] α f' g'
+```
+We can also define vertical 1-cells and 2-cells, displayed over the identity.
+```agda
+  _[]↦_ : ∀ {A} → Ob[ A ] → Ob[ A ] → Type _
+  A₁ []↦ A₂ = Hom[ A₁ , A₂ ] .Displayed.Ob[_] id
+
+  _[]⇒_ : ∀ {A B} {f : A ↦ B} 
+        → {A' : Ob[ A ]} {B' : Ob[ B ]} 
+        → A' [ f ]↦ B' → A' [ f ]↦ B'
+        → Type _
+  _[]⇒_ {A' = A'} {B'} f' g' = Hom[ A' , B' ] .Displayed.Hom[_] Hom.id f' g'
+
+  _[↓]⇒_ : ∀ {A B} {f : A ↦ B}
+         → {A₁ A₂ : Ob[ A ]}
+         → A₁ []↦ A₂ → A₁ []↦ A₂
+         → Type _
+  _[↓]⇒_ {A₁ = A₁} {A₂} f' g' = Hom[ A₁ , A₂ ] .Displayed.Hom[_] Hom.id f' g'
+
 ```
 We require an indentity 1-cell displayed over the identity 1-cell of the base bicategory.
 ```agda 
@@ -278,6 +297,7 @@ As do the triangle and pentagon identities.
       → ((α←' f' g' h' ◀' i') ∘' α←' f' (g' ⊗' h') i' ∘' (f' ▶' α←' g' h' i'))
           Hom[].≡[ pentagon f g h i ]
           (α←' (f' ⊗' g') h' i' ∘' α←' f' g' (h' ⊗' i'))
+
 ```
 
 ## The displayed bicategory of displayed categories
@@ -285,6 +305,29 @@ As do the triangle and pentagon identities.
 Displayed categories naturally assemble into a displayed biacategory over $\bf{Cat}$.
 <!--
 ```agda 
+
+
+module Bidisplayed-Hom[]-Reasoning 
+  {o oh ℓh o' oh' ℓh'} 
+  {B : Prebicategory o oh ℓh} 
+  (E : Bidisplayed B o' oh' ℓh') 
+  where
+  open Bidisplayed E hiding (module Hom[]) public
+  module Hom[] {A B} {A' : Ob[ A ]} {B' : Ob[ B ]} where
+    open DR Hom[ A' , B' ] public
+    open DM Hom[ A' , B' ] public
+    open Displayed Hom[ A' , B' ] public
+
+
+module _
+  {o oh ℓh o' oh' ℓh'} 
+  {B : Prebicategory o oh ℓh} 
+  (E : Bidisplayed B o' oh' ℓh') 
+  where
+  open Bidisplayed E
+
+  is-category-displayed-locally : Type _
+  is-category-displayed-locally = ∀ {A B} {A' : Ob[ A ]} {B' : Ob[ B ]} → is-category-displayed Hom[ A' , B' ]
 
 open Bidisplayed hiding (_∘'_)
 ```

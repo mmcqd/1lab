@@ -3,6 +3,7 @@
 open import 1Lab.Reflection.HLevel
 open import 1Lab.HLevel.Closure
 open import 1Lab.Reflection
+open import 1Lab.Underlying
 open import 1Lab.HLevel
 open import 1Lab.Path
 open import 1Lab.Type hiding (id ; _∘_)
@@ -139,6 +140,10 @@ For convenience, we also introduce displayed analogues for equational chain reas
 <!--
 ```agda
 open hlevel-projection
+
+instance
+  Funlike-displayed : ∀ {o ℓ o' ℓ'} {B : Precategory o ℓ} → Funlike (Displayed B o' ℓ') (B .Precategory.Ob) λ _ → Type o'
+  Funlike-displayed = record { _·_ = Displayed.Ob[_] }
 
 private
   Hom[]-set

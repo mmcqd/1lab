@@ -542,6 +542,18 @@ module _ {a' : Hom[ a ] y' z'} {b' : Hom[ b ] x' y'} {c' : Hom[ c ] x' z'}
     → (f' ∘' a') ∘' b' ≡[ pullr p ] f' ∘' c'
   pullr[] = pullr'
 
+
+  pull-inner' : ∀ {f' : Hom[ f ] z' w'} {g' : Hom[ g ] u' x'} {q : (f ∘ a) ∘ (b ∘ g) ≡ f ∘ c ∘ g}
+              → (f' ∘' a') ∘' (b' ∘' g') ≡[ q ] f' ∘' c' ∘' g'
+  pull-inner' {f' = f'} {g' = g'} = cast[] $ 
+    (f' ∘' a') ∘' (b' ∘' g') ≡[]⟨ symP (assoc' _ _ _) ⟩
+    f' ∘' a' ∘' b' ∘' g'     ≡[]⟨ refl⟩∘'⟨ pulll[] ⟩
+    f' ∘' c' ∘' g'           ∎ 
+
+  pull-inner[] : ∀ {f' : Hom[ f ] z' w'} {g' : Hom[ g ] u' x'} 
+               → (f' ∘' a') ∘' (b' ∘' g') ≡[ pull-inner p ] f' ∘' c' ∘' g'
+  pull-inner[] = pull-inner'
+
 module _ {a' : Hom[ a ] y' z'} {b' : Hom[ b ] x' y'} {c' : Hom[ c ] x' z'}
          (p : c ≡ a ∘ b) (p' : c' ≡[ p ] a' ∘' b') where abstract
 

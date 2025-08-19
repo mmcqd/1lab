@@ -8,6 +8,11 @@ open import Cat.Displayed.Cartesian
 open import Cat.Displayed.Cartesian.Discrete
 open import Cat.Bi.Displayed.Cartesian
 open import Cat.Displayed.Instances.Pullback
+open import Cat.Displayed.Instances.Identity
+open import Cat.Displayed.Composition
+open import Cat.Displayed.Functor
+open import Cat.Displayed.Total renaming (∫ to ∫' ; πᶠ to πᶠ' ; ∫ᶠ to ∫ᶠ')
+open import Cat.Functor.Adjoint
 import Cat.Reasoning as CR
 import Cat.Displayed.Reasoning as DR
 
@@ -15,8 +20,9 @@ module Cat.Bi.Displayed.DFib where
 
 module _ o ℓ o' ℓ' where
 
-  module Cat = Prebicategory (Cat o ℓ)
-  module Disp = Bidisplayed (Displayed-cat o ℓ o' ℓ')
+  private
+    module Cat = Prebicategory (Cat o ℓ)
+    module Disp = Bidisplayed (Displayed-cat o ℓ o' ℓ')
 
   open _=>_
   open _=[_]=>_
@@ -40,7 +46,8 @@ module _ o ℓ o' ℓ' where
   DFib .Bidisplayed.triangle' = Disp.triangle'
   DFib .Bidisplayed.pentagon' = Disp.pentagon'
   
-  module DFib = Bidisplayed DFib
+  private module DFib = Bidisplayed DFib
+
 
   open Bicartesian-fibration
   open 1-cell-cartesian
@@ -75,18 +82,18 @@ module _ o ℓ o' ℓ' where
     DFib-1-cart : Bicartesian-lift DFib f (B' , B'*)
     DFib-1-cart .A' = Change-of-base f B' , Change-of-base-discrete-fibration f _ B'*
     DFib-1-cart .lifting = Change-of-base-functor f B'
-    DFib-1-cart .cartesian .universal₁ {U} {U'} = univ {U} {U'}
-    DFib-1-cart .cartesian .commutes₁ m h' = to-natural-iso' ni where
+    DFib-1-cart .cartesian .universal¹ {U} {U'} = univ {U} {U'}
+    DFib-1-cart .cartesian .commutes¹ m h' = to-natural-iso' ni where
       ni : make-natural-iso[ _ ] _ _
       ni .eta' _ = B'.id'
       ni .inv' _ = B'.id'
       ni .eta∘inv' _ = B'.idl' _ 
       ni .inv∘eta' _ = B'.idl' _ 
       ni .natural' x' y' f' = B'.id-comm-sym[]
-    DFib-1-cart .cartesian .universal₂ δ σ .η' x' = B'.hom[ B.idr _ ] (σ .η' x')
-    DFib-1-cart .cartesian .universal₂ δ σ .is-natural' x' y' f' = is-prop→pathp (λ _ → hlevel 1) _ _
-    DFib-1-cart .cartesian .commutes₂ δ σ = Nat'-path λ _ → is-prop→pathp (λ _ → hlevel 1) _ _
-    DFib-1-cart .cartesian .unique₂ δ σ δ' x = Nat'-path λ _ → is-prop→pathp (λ _ → hlevel 1) _ _
+    DFib-1-cart .cartesian .universal² δ σ .η' x' = B'.hom[ B.idr _ ] (σ .η' x')
+    DFib-1-cart .cartesian .universal² δ σ .is-natural' x' y' f' = is-prop→pathp (λ _ → hlevel 1) _ _
+    DFib-1-cart .cartesian .commutes² δ σ = Nat'-path λ _ → is-prop→pathp (λ _ → hlevel 1) _ _
+    DFib-1-cart .cartesian .unique² σ δ' x = Nat'-path λ _ → is-prop→pathp (λ _ → hlevel 1) _ _
 
   module _ 
     {A B} {A' : DFib.Ob[ A ]} {B' : DFib.Ob[ B ]}
@@ -178,3 +185,22 @@ module _ o ℓ o' ℓ' where
   DFib-bicartesian .1-cart = DFib-1-cart
   DFib-bicartesian .2-cart {A' = A'} {B'} = DFib-2-cart {A' = A'} {B'}
   DFib-bicartesian .◆'-cart {A' = A'} {B'} {C'} = DFib-◆'-cart {A' = A'} {B'} {C'}
+
+module _ {o' ℓ'} where
+  private
+    module DFib {o ℓ} = Bidisplayed (DFib o ℓ o' ℓ')
+    module Disp {o ℓ} = Bidisplayed (Displayed-cat o ℓ o' ℓ)
+
+  ∫ : ∀ {o ℓ} {A : Precategory o ℓ} → DFib.Ob[ A ] → Precategory _ _
+  ∫ (E , _) = ∫' E
+
+  πᶠ : ∀ {o ℓ} {A : Precategory o ℓ} (E : DFib.Ob[ A ]) → Functor (∫ E) A
+  πᶠ (E , _) = πᶠ' E
+
+  DFibΣ : ∀ {o ℓ} {A : Precategory o ℓ} (E : DFib.Ob[ A ]) → DFib.Ob[ ∫ E ] → DFib.Ob[ A ]
+  DFibΣ (E , E*) (E' , E'*) = (E D∘ E') , discrete-∘ E* E'*
+
+  is-representable : ∀ {o ℓ} {A : Precategory o ℓ} (E : DFib.Ob[ A ]) → DFib.Ob[ ∫ E ] → Type _
+  is-representable E E' = Σ[ δ ∈ Functor (∫ E) (∫ E') ] πᶠ E' ⊣ δ
+
+ 

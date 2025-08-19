@@ -395,6 +395,11 @@ record is-invertible[_]
     inv' : Hom[ is-invertible.inv f-inv ] b' a'
     inverses' : Inverses[ is-invertible.inverses f-inv ] f' inv'
 
+  op' : is-invertible[ is-invertible.op f-inv ] inv'
+  op' .inv' = f'
+  op' .inverses' .Inverses[_].invl' = inverses' .Inverses[_].invr'
+  op' .inverses' .Inverses[_].invr' = inverses' .Inverses[_].invl'
+
   open Inverses[_] inverses' public
 
 record _≅[_]_

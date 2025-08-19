@@ -1,6 +1,7 @@
 <!--
 ```agda
 open import Cat.Displayed.Cartesian
+open import Cat.Displayed.Cartesian.Discrete
 open import Cat.Displayed.Functor
 open import Cat.Displayed.Total
 open import Cat.Displayed.Base
@@ -73,6 +74,17 @@ that projects out the data of $\cE$ from the composite.
 πᵈ .Displayed-functor.F₁' = fst
 πᵈ .Displayed-functor.F-id' = refl
 πᵈ .Displayed-functor.F-∘' = refl
+
+-- If we think about discrete fibrations,
+-- This type is saying  (πᶠ ℰ) ^* (ℰ D∘ ℱ) ≡ ℱ
+π̂ : ∀ {o ℓ o' ℓ' o'' ℓ''}
+    → {ℬ : Precategory o ℓ}
+    → {ℰ : Displayed ℬ o' ℓ'} {ℱ : Displayed (∫ ℰ) o'' ℓ''}
+    → Displayed-functor (πᶠ ℰ) ℱ (ℰ D∘ ℱ) 
+π̂ .Displayed-functor.F₀' {x , x'} x'' = x' , x''
+π̂ .Displayed-functor.F₁' {f = ∫hom f f'} f'' = f' , f''
+π̂ .Displayed-functor.F-id' = refl
+π̂ .Displayed-functor.F-∘' = refl 
 ```
 
 ## Composition of fibrations
@@ -149,4 +161,23 @@ universal.
           (∫Hom-path ℰ refl (ℰ.π*.commutes _ _))
           (m' .snd)
           (ap snd p)
+
+  discrete-∘ : is-discrete-cartesian-fibration ℰ → is-discrete-cartesian-fibration ℱ 
+             → is-discrete-cartesian-fibration (ℰ D∘ ℱ)
+  discrete-∘ ℰ-disc ℱ-disc = ℰ∘ℱ-disc where 
+    open is-discrete-cartesian-fibration
+
+    module ℰ where
+      open is-discrete-cartesian-fibration ℰ-disc public
+      open Displayed ℰ public
+ 
+    module ℱ where
+      open is-discrete-cartesian-fibration ℱ-disc public
+      open Displayed ℱ public
+
+
+    ℰ∘ℱ-disc : is-discrete-cartesian-fibration (ℰ D∘ ℱ)
+    ℰ∘ℱ-disc .fibre-set x = hlevel 2 
+    ℰ∘ℱ-disc .cart-lift f (y' , y'') = Equiv→is-hlevel 0 (Σ-swap-Σ e⁻¹) (Σ-is-hlevel 0 (ℰ.cart-lift f y') λ (x' , f') → ℱ.cart-lift (∫hom f f') y'') 
+
 ```

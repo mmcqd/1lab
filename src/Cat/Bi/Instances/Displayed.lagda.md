@@ -5,6 +5,7 @@ open import Cat.Displayed.Functor
 open import Cat.Instances.Product
 open import Cat.Displayed.Fibre
 open import Cat.Displayed.Base
+open import Cat.Functor.Properties
 open import Cat.Bi.Base
 open import Cat.Prelude
 

@@ -1,6 +1,7 @@
 <!--
 ```agda
 open import Cat.Displayed.Cartesian
+open import Cat.Displayed.Functor
 open import Cat.Diagram.Pullback
 open import Cat.Displayed.Base
 open import Cat.Prelude
@@ -280,5 +281,27 @@ module _ {o ℓ o' ℓ'} {B : Precategory o ℓ} {E : Displayed B o' ℓ'} where
 
     H-Level-∫Hom' : ∀ {X Y} {n} → H-Level (∫Hom E X Y) (2 + n)
     H-Level-∫Hom' = H-Level-∫Hom E
+
+
+module _ 
+  {ob ℓb oc ℓc od ℓd oe ℓe} 
+  {B : Precategory ob ℓb} {C : Precategory oc ℓc} 
+  {D : Displayed B od ℓd} {E : Displayed C oe ℓe} 
+  {F : Functor B C}
+  (F' : Displayed-functor F D E)
+   where
+
+  private 
+    module D = Displayed D
+    module E = Displayed E
+    module F = Functor F
+    module F' = Displayed-functor F'
+
+  ∫ᶠ : Functor (∫ D) (∫ E)
+  ∫ᶠ .Functor.F₀ (x , x') = F.₀ x , F'.₀' x'
+  ∫ᶠ .Functor.F₁ (∫hom f f') = ∫hom (F.₁ f) (F'.₁' f')
+  ∫ᶠ .Functor.F-id i = ∫hom (F.F-id i) (F'.F-id' i) 
+  ∫ᶠ .Functor.F-∘ (∫hom f f') (∫hom g g') i = ∫hom (F.F-∘ f g i) (F'.F-∘' {f' = f'} {g' = g'} i) 
+
 ```
 -->
