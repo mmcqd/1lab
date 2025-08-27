@@ -577,33 +577,39 @@ cart-paste {x' = x'} {y' = y'} {f = f} {g = g} f' fg' = g' where
     subst-is-cartesian refl (sym (f'.commutes g (fg' .hom'))) (fg' .cartesian)
 ```
 
-If a morphism is both vertical and cartesian, then it must be an
-isomorphism. We can construct the inverse by factorizing the identity
-morphism, which is possible due to the fact that $f'$ is vertical.
+If we have a cartesian morphism over an isomorphism, then the
+cartesian morphsim must also be an isomorphism. We can construct the inverse by factorizing the identity
+morphism, which is possible due to the fact that $f$ is invertible.
+
+```agda
+invertible+cartesian→invertible : ∀ {x y x' y'} {f : Hom x y} {f-inv : is-invertible f} 
+                      → (f' : Hom[ f ] x' y') 
+                      → is-cartesian f f' 
+                      → is-invertible[ f-inv ] f'
+invertible+cartesian→invertible {x' = x'} {y' = y'} {f-inv = f-inv} f' cart = make-invertible[ _ ] inv' f'-invl' f'-invr' where
+  open is-cartesian cart
+  module f-inv = is-invertible f-inv
+
+  inv' : Hom[ f-inv.inv ] y' x'
+  inv' = universal' f-inv.invl id'
+
+  f'-invl' : f' ∘' inv' ≡[ f-inv.invl ] id'
+  f'-invl' = commutesp _ id'
+
+  f'-invr' : inv' ∘' f' ≡[ f-inv.invr ] id' 
+  f'-invr' = uniquep₂ _ _ _ (inv' ∘' f') id' (cancell[] _ f'-invl') (idr' f')
+
+```
+
+Since identity is an isomorphism, this specializes to the following: 
+if a morphism is both vertical and cartesian, then it must be an isomorphism. 
 
 ```agda
 vertical+cartesian→invertible
   : ∀ {x} {x' x'' : Ob[ x ]} {f' : Hom[ id ] x' x''}
   → is-cartesian id f'
   → is-invertible↓ f'
-vertical+cartesian→invertible {x' = x'} {x'' = x''} {f' = f'} f-cart =
-  make-invertible↓ f⁻¹'  f'-invl f'-invr where
-    open is-cartesian f-cart
-
-    f⁻¹' : Hom[ id ] x'' x'
-    f⁻¹' = universal' (idl _) id'
-
-    f'-invl : f' ∘' f⁻¹' ≡[ idl _ ] id'
-    f'-invl = commutesp _ id'
-
-    path : f' ∘' f⁻¹' ∘' f' ≡[ elimr (idl _) ] f'
-    path = cancell' (idl _) (commutesp (idl _) id')
-
-    f'-invr : f⁻¹' ∘' f' ≡[ idl _ ] id'
-    f'-invr =
-      uniquep₂ _ _ _ (f⁻¹' ∘' f') id'
-        (cancell[] _ f'-invl)
-        (idr' f')
+vertical+cartesian→invertible = invertible+cartesian→invertible _ 
 ```
 
 Furthermore, $f' : x' \to_{f} y'$ is cartesian if and only if the
