@@ -181,6 +181,7 @@ module
 
 ```agda
   record is-fibred-functor (F' : Displayed-functor F ℰ ℱ) : Type lvl where
+    constructor is-fibred
     no-eta-equality
     open Displayed-functor F'
     field
@@ -188,10 +189,15 @@ module
         : ∀ {a b a' b'} {f : A.Hom a b} {f' : ℰ.Hom[ f ] a' b'}
         → ℰ.is-cartesian f f'
         → ℱ.is-cartesian (F.₁ f) (F₁' f')
+    
+    module _ {a b a' b'} {f : A.Hom a b} {f' : ℰ.Hom[ f ] a' b'} (cart : ℰ.is-cartesian f f') where
+      open ℱ.is-cartesian (F-cartesian cart) public
 ```
 
 <!--
 ```agda
+  {-# INLINE is-fibred #-}
+  
   instance
     H-Level-is-fibred-functor
       : ∀ {F' : Displayed-functor F ℰ ℱ}
@@ -534,6 +540,15 @@ module _
            → (∀ {x} (x' : D.Ob[ x ]) → α' .η' x' E.≡[ p ηₚ x ] β' .η' x')
            → PathP (λ i → F' =[ p i ]=> G') α' β'
   Nat'-path = Nat'-pathp refl refl _ refl refl
+
+  _ηₚ'_ : {F G : Functor A B} {F' : Displayed-functor F D E} {G' : Displayed-functor G D E}
+           → {α β : F => G} {α' : F' =[ α ]=> G'} {β' : F' =[ β ]=> G'} 
+           → {p : α ≡ β}
+           → PathP (λ i → F' =[ p i ]=> G') α' β'
+           → ∀ {x} (x' : D.Ob[ x ])
+           → (α' .η' x') E.≡[ p ηₚ x ] (β' .η' x')
+  p ηₚ' x' = apd (λ _ z → z .η' x') p
+
 ```
 -->
 

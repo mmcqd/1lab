@@ -1,14 +1,18 @@
 <!--
 ```agda
+open import Cat.Displayed.Instances.FullSubcategory
 open import Cat.Displayed.Instances.TotalProduct
+open import Cat.Displayed.Cartesian
+open import Cat.Displayed.Total
 open import Cat.Displayed.Functor
 open import Cat.Instances.Functor
 open import Cat.Functor.Compose
 open import Cat.Displayed.Base
-open import Cat.Reasoning as CR
 open import Cat.Prelude
 
+import Cat.Reasoning as CR
 import Cat.Displayed.Reasoning as DR
+import Cat.Displayed.Morphism as DM
 ```
 -->
 
@@ -54,9 +58,10 @@ module _
   Disp[_,_] .Displayed.idl' _ = Nat'-path λ x' → E.idl' _
   Disp[_,_] .Displayed.assoc' _ _ _ = Nat'-path λ x' → E.assoc' _ _ _
   Disp[_,_] .Displayed.hom[_] {x = F} {y = G} p α' = NT' (λ {x} x' → E.hom[ p ηₚ x ] (α' .η' x')) 
-    λ {x} {y} x' y' f' → E.cast[] $ E.unwrapl _ E.∙[] α' .is-natural' x' y' f' E.∙[] E.wrapr _
+    λ {x} {y} x' y' f' → E.cast[] $ E.unwrapl _ E.∙∙[] α' .is-natural' x' y' f' ∙∙[] E.wrapr _
   Disp[_,_] .Displayed.coh[_] p f = Nat'-path (λ {x} x' → E.coh[ p ηₚ x ] (f .η' x'))
 ```
+
 
 <!--
 ```agda
@@ -101,7 +106,11 @@ module _
   {C' : Displayed C oc' ℓc'} 
   where
   private 
-    module C = Precategory C
+    module A = CR A
+    module A' = Displayed A'
+    module B = CR B
+    module B' = Displayed B'
+    module C = CR C
     module C' = Displayed C'
 ```
 -->
@@ -116,10 +125,67 @@ Armed with this, we can define our displayed composition functor.
   F∘'-functor .F₁' (α' , β') = α' ◆' β'
   F∘'-functor .F-id' {F , G} {F' , G'} = 
     Nat'-path λ x' → C'.idr' _ C'.∙[] F' .F-id'
-  F∘'-functor .F-∘' {a' = F' , G'} {H' , I'} {J' , K'} {α' , _} {β' , _} =
+  F∘'-functor .F-∘' {a' = F' , G'} {H' , I'} {J' , K'} {α' , _} {β' , _} = 
     Nat'-path λ x' → 
         pushl[] _ (J' .F-∘')                              C'.∙[] 
         ((extend-inner' _ (symP (α' .is-natural' _ _ _))) C'.∙[] 
         (pulll' refl refl))
       where open DR C'
+```
+
+We can also define a restriction of this functor for any property that respects composition.
+
+
+If *insert conditions here*, then the displayed composition functor itself is fibred.
+
+```agda 
+  -- module _ (C'* : Cartesian-fibration C') where
+  --   open Cartesian-fibration _ C'*
+
+  --   open is-fibred-functor
+  --   open is-cartesian
+
+  --   F∘'-functor-fibred : is-fibred-functor F∘'-functor
+  --   F∘'-functor-fibred .F-cartesian {a = F , H} {b = G , K} {a' = F' , H'} {b' = G' , K'} {f = α , β} {f' = α' , β'} cart = 
+  --     Disp[ _ , _ ]-cartesian λ {x} x' → cartesian-∘ C' (G'-fibred .F-cartesian (×ᵀᴰ-cartesian _ _ {!   !} .fst)) {!   !} where
+
+      
+
+  --     module cart = is-cartesian cart
+  --     postulate
+  --       F'-fibred : is-fibred-functor F'
+  --       H'-fibred : is-fibred-functor H'
+  --       G'-fibred : is-fibred-functor G'
+  --       K'-fibred : is-fibred-functor K'
+  --     module F'-fibred = is-fibred-functor F'-fibred
+  --     module H'-fibred = is-fibred-functor H'-fibred
+  --     module F'∘H'-fibred = is-fibred-functor (F∘'-fibred F'-fibred H'-fibred)
+  --     module G'∘K'-fibred = is-fibred-functor (F∘'-fibred G'-fibred K'-fibred)
+        
+  --     ◆'-cart : is-cartesian _ (α ◆ β) (α' ◆' β')
+  --     ◆'-cart = {! F'∘H'-fibred.F-cartesian  !}
+
+      -- ◆'-cart : is-cartesian _ _ _
+      -- ◆'-cart .universal {u = u} {u' = u'} m h' = NT' (λ {x} x' → {! F'∘H'-fibred.F-cartesian  !}) {!   !} where
+      --   postulate
+      --     u'-fibred : is-fibred-functor u'
+      --     F'-fibred : is-fibred-functor F'
+      --     H'-fibred : is-fibred-functor H'
+      --     G'-fibred : is-fibred-functor G'
+      --     K'-fibred : is-fibred-functor K'
+      --   module u'-fibred = is-fibred-functor u'-fibred
+      --   module F'-fibred = is-fibred-functor F'-fibred
+      --   module H'-fibred = is-fibred-functor H'-fibred
+      --   module F'∘H'-fibred = is-fibred-functor (F∘'-fibred F'-fibred H'-fibred)
+      --   module G'∘K'-fibred = is-fibred-functor (F∘'-fibred G'-fibred K'-fibred)
+
+      --   -- lemma : ∀ {x} (x' : A'.Ob[ x ]) → h' .η' x' C'.≡[ _ ] _
+      --   -- lemma {x} x' = G'∘K'-fibred.uniquep {!   !} {!   !} (sym {! β .is-natural _ _ _  !}) {!   !} (h' .η' x') (symP (h' .is-natural' _ _ _))
+      --     --  G'∘K'-fibred.uniquep {!   !} (h' .η' x') {! symP $ h' .is-natural' _ _ _ !}
+
+
+
+
+      -- ◆'-cart .commutes = {!   !}
+      -- ◆'-cart .unique = {!   !}
 ```

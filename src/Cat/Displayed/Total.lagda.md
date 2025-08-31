@@ -1,6 +1,7 @@
 <!--
 ```agda
 open import Cat.Displayed.Cartesian
+open import Cat.Displayed.Functor
 open import Cat.Diagram.Pullback
 open import Cat.Displayed.Base
 open import Cat.Prelude
@@ -283,5 +284,25 @@ module _ {o ℓ o' ℓ'} {B : Precategory o ℓ} {E : Displayed B o' ℓ'} where
 
     H-Level-∫Hom' : ∀ {X Y} {n} → H-Level (∫Hom E X Y) (2 + n)
     H-Level-∫Hom' = H-Level-∫Hom E
+
+module _ 
+  {ob ℓb oc ℓc od ℓd oe ℓe} 
+  {B : Precategory ob ℓb} {C : Precategory oc ℓc} 
+  {D : Displayed B od ℓd} {E : Displayed C oe ℓe}
+  {F : Functor B C}
+  where
+
+  open Functor
+  open Displayed-functor
 ```
 -->
+
+Every displayed functor induces a normal functor on total categories.
+
+```agda
+  ∫ᶠ : Displayed-functor F D E → Functor (∫ D) (∫ E)
+  ∫ᶠ F' .F₀ (x , x') = F .F₀ x , F' .F₀' x'
+  ∫ᶠ F' .F₁ (∫hom f f') = ∫hom (F .F₁ f) (F' .F₁' f')
+  ∫ᶠ F' .F-id = ∫Hom-path _ (F .F-id) (F' .F-id')
+  ∫ᶠ F' .F-∘ _ _ = ∫Hom-path _ (F .F-∘ _ _) (F' .F-∘')
+```

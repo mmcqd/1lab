@@ -641,6 +641,65 @@ cartesian→postcompose-equiv cart =
 ```
 
 
+ y' ---g'---> z'
+≅[i]
+ x' ---f'---> z' 
+
+Any cartesian morphism can be "pulled back along an isomorphism". 
+This is essentially the inverse of cartesian-domain-unique.
+
+```agda
+
+domain-iso→cartesian
+  : ∀ {x y z x' y' z'} {f : Hom x z} {g : Hom y z}
+  → {f' : Hom[ f ] x' z'} {g' : Hom[ g ] y' z'}
+  → {i : y ≅ x}
+  → {p : f ∘ i .to ≡ g}
+  → (i' : y' ≅[ i ] x')
+  → f' ∘' i' .to' ≡[ p ] g'
+  → is-cartesian f f'
+  → is-cartesian g g'
+domain-iso→cartesian {f = f} {g = g} {f' = f'} {g' = g'} {i = i} {p = p} i' p' f-cart = g-cart where
+
+  open is-cartesian f-cart
+
+  p-conj : f' ≡[ _ ] g' ∘' i' .from' 
+  p-conj = insertr[] _ (i' .invl') ∙[] apd (λ _ → _∘' i' .from') p' 
+
+  g-cart : is-cartesian _ _
+  g-cart .is-cartesian.universal m h' = hom[ cancell (i .invr) ] (i' .from' ∘' universal' (pulll p) h')
+  g-cart .is-cartesian.commutes m h' = cast[] $
+    g' ∘' hom[] (i' .from' ∘' universal' _ h') ≡[]⟨ unwrapr _ ⟩
+    g' ∘' i' .from' ∘' universal' _ h'         ≡[]⟨ pulll[] _ (symP p-conj) ⟩
+    f' ∘' universal' _ h'                      ≡[]⟨ commutesp (pulll p) h' ⟩
+    h'                                         ∎
+  g-cart .is-cartesian.unique {h' = h'} m' q' = symP $ cartesian→weak-monic (cartesian-∘ f-cart (iso→cartesian i')) _ _ _ $ cast[] $ 
+    (f' ∘' i' .to') ∘' hom[] (i' .from' ∘' universal' _ h') ≡[]⟨ unwrapr _ ⟩
+    (f' ∘' i' .to') ∘' (i' .from' ∘' universal' _ h')       ≡[]⟨ cancel-inner[] _ (i' .invl') ⟩
+    f' ∘' universal' _ h'                                   ≡[]⟨ commutesp (pulll p) _  ⟩ 
+    h'                                                      ≡[]˘⟨ q' ⟩
+    g' ∘' m'                                                ≡[]˘⟨ p' ⟩∘'⟨refl ⟩ 
+    (f' ∘' i' .to') ∘' m'              ∎
+```
+
+```agda
+
+hom[]-cartesian 
+  : ∀ {x y x' y'} {f g : Hom x y} {f' : Hom[ f ] x' y'}
+  → (p : f ≡ g)
+  → is-cartesian f f'
+  → is-cartesian g (hom[ p ] f')
+hom[]-cartesian p cart = hom[]-cart where
+
+  open is-cartesian cart
+  
+  hom[]-cart : is-cartesian _ _
+  hom[]-cart .is-cartesian.universal m h' = universal' (ap (_∘ m) p) h'
+  hom[]-cart .is-cartesian.commutes m h' = whisker-l p ∙ from-pathp[] (commutesp _ _)
+  hom[]-cart .is-cartesian.unique m' q = unique _ $ from-pathp[]⁻ $ to-pathp[] (unwhisker-l _ _ ∙ q)
+
+```
+
 ## Cartesian lifts {defines="cartesian-lift"}
 
 We call an object $y'$ over $y$ together with a Cartesian arrow $f' : x'

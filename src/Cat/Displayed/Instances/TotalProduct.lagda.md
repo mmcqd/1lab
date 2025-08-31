@@ -5,6 +5,7 @@ open import 1Lab.HLevel.Closure
 open import 1Lab.Type.Sigma
 
 open import Cat.Instances.Sets.Complete
+open import Cat.Displayed.Cartesian
 open import Cat.Displayed.Functor
 open import Cat.Instances.Product
 open import Cat.Diagram.Product
@@ -28,8 +29,11 @@ module _
   {C : Precategory o₁ ℓ₁}
   {D : Precategory o₂ ℓ₂}
   (EC : Displayed C o₃ ℓ₃) (ED : Displayed D o₄ ℓ₄) where
-  private module EC = Displayed EC
-  private module ED = Displayed ED
+  private 
+    module C = Precategory C
+    module D = Precategory D
+    module EC = Displayed EC
+    module ED = Displayed ED
 ```
 -->
 
@@ -86,6 +90,30 @@ they hold for the components of the ordered pairs.
 
   _×ᵀᴰ_ .Displayed.hom[_] p f = EC.hom[ ap fst p ] (f .fst) ,  ED.hom[ ap snd p ] (f .snd)
   _×ᵀᴰ_ .Displayed.coh[_] p f = EC.coh[ ap fst p ] (f .fst) ,ₚ ED.coh[ ap snd p ] (f .snd)
+```
+
+If a pair of morphisms is cartesian in $\cE\times \cD\to \cB\times \cC$, then
+each morphism is individually cartesian as well.
+
+```agda
+  open is-cartesian
+
+  ×ᵀᴰ-cartesian : ∀ {a b x y} {f : C.Hom a b} {g : D.Hom x y} 
+                → ∀ {a' b' x' y'} {f' : EC.Hom[ f ] a' b'} {g' : ED.Hom[ g ] x' y'}
+                → is-cartesian _×ᵀᴰ_ (f , g) (f' , g') → (is-cartesian EC f f') × (is-cartesian ED g g')
+  ×ᵀᴰ-cartesian {f' = f'} {g' = g'} cart = f'-cart , g'-cart where
+    module cart = is-cartesian cart
+
+    f'-cart : is-cartesian _ _ _
+    f'-cart .universal m h' = fst $ cart.universal' (refl ,ₚ D.idr _) (h' , g') 
+    f'-cart .commutes m h' = apd (λ _ → fst) $ cart.commutesp (refl ,ₚ D.idr _) _ 
+    f'-cart .unique m' p = apd (λ _ → fst) $ cart.uniquep (refl ,ₚ D.idr _) refl (refl ,ₚ D.idr _) (m' , ED.id') (p ,ₚ ED.idr' _)
+
+    g'-cart : is-cartesian _ _ _
+    g'-cart .universal m h' = snd $ cart.universal' (C.idr _ ,ₚ refl) (f' , h') 
+    g'-cart .commutes m h' = apd (λ _ → snd) $ cart.commutesp (C.idr _ ,ₚ refl) _ 
+    g'-cart .unique m' p = apd (λ _ → snd) $ cart.uniquep (C.idr _ ,ₚ refl) refl (C.idr _ ,ₚ refl) (EC.id' , m') (EC.idr' _ ,ₚ p)
+
 ```
 
 <!--

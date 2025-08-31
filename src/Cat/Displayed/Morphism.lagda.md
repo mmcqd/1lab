@@ -658,6 +658,17 @@ iso[]→from-has-retract[] f' .retract' = f' .to'
 iso[]→from-has-retract[] f' .is-retract' = f' .invl'
 ```
 
+Using the hom[_] map, we can build transport map for isos with nicer definitional behavior
+
+```agda
+iso[_] : ∀ {a b a' b'}
+       → {i j : a ≅ b}
+       → i ≡ j
+       → a' ≅[ i ] b'
+       → a' ≅[ j ] b'
+iso[ p ] i' = make-iso[ _ ] (hom[ ap to p ] (i' .to')) (hom[ ap from p ] (i' .from')) (cast[] $ (unwrap _ ⟩∘'⟨ unwrap _) ∙[] i' .invl') (cast[] $ (unwrap _ ⟩∘'⟨ unwrap _) ∙[] i' .invr')
+```
+
 <!--
 ```agda
 module _

@@ -149,6 +149,15 @@ introducing them in the first place.
         → f' ≡[ p ] g' → g' ≡[ q ] h' → f' ≡[ p ∙ q ] h'
   _∙[]_ {x = x} {y = y} p' q' = _∙P_ {B = λ f → Hom[ f ] x y} p' q'
 
+  _∙∙[]_∙∙[]_ : ∀ {a b x y} {f g h i : Hom a b} {p : f ≡ g} {q : g ≡ h} {r : h ≡ i}
+              → {f' : Hom[ f ] x y} {g' : Hom[ g ] x y} {h' : Hom[ h ] x y} {i' : Hom[ i ] x y}
+              → f' ≡[ p ] g' → g' ≡[ q ] h' → h' ≡[ r ] i' 
+              → f' ≡[ p ∙∙ q ∙∙ r ] i'
+  _∙∙[]_∙∙[]_ {x = x} {y} {p = p} {q} {r} p' q' r' i = comp (λ j → Hom[ ∙∙-filler p q r j i ] x y) (∂ i) λ where
+    j (i = i0) → p' (~ j)
+    j (i = i1) → r' j
+    j (j = i0) → q' i     
+
   ∙[-]-syntax : ∀ {a b x y} {f g h : Hom a b} (p : f ≡ g) {q : g ≡ h}
         → {f' : Hom[ f ] x y} {g' : Hom[ g ] x y} {h' : Hom[ h ] x y}
         → f' ≡[ p ] g' → g' ≡[ q ] h' → f' ≡[ p ∙ q ] h'

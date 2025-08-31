@@ -1,8 +1,10 @@
 <!--
 ```agda
 open import Cat.Displayed.Instances.DisplayedFunctor
+open import Cat.Displayed.Instances.FullSubcategory
 open import Cat.Functor.Naturality
 open import Cat.Displayed.Functor
+open import Cat.Displayed.Total
 open import Cat.Displayed.Base
 open import Cat.Morphism
 open import Cat.Prelude
@@ -34,7 +36,9 @@ module _
       open DR Disp[ D , E ] public 
       open DM Disp[ D , E ] public
     module D = DR D
-    module E = DR E
+    module E where 
+      open DR E public
+      open DM E public
     
   open Functor
   open _=>_
@@ -101,3 +105,13 @@ module _
   {-# INLINE to-natural-iso' #-}
 ```
 -->
+
+```agda
+
+  iso[]ⁿ→iso 
+    : {f g : Functor B C} {f' : Displayed-functor f D E} {g' : Displayed-functor g D E}
+    → (i : f ≅ⁿ g) → f' ≅[ i ]ⁿ g' 
+    → ∀ {x} x' → f' .F₀' x' E.≅[ isoⁿ→iso i x ] g' .F₀' x'
+  iso[]ⁿ→iso i i' x' = E.make-iso[ _ ] (i' .DE.to' .η' x') (i' .DE.from' .η' x') (i' .DE.invl' ηₚ' x') (i' .DE.invr' ηₚ' x')
+
+```
