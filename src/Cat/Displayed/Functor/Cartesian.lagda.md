@@ -102,7 +102,8 @@ In fact, Disp[]-cartesian is an equivalence.
       where
 
       η'-cartesian : is-cartesian Disp[ D , E ] α α' → ∀ {x} x' → is-cartesian E (α .η x) (α' .η' x')
-      η'-cartesian cart x' = domain-iso→cartesian _ 
+      η'-cartesian cart x' = 
+        cartesian-iso-stable _ 
             (iso[]ⁿ→iso _ 
               (cartesian-domain-unique _ cart Disp[]*.π*.cartesian) 
               x'

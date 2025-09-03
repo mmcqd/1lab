@@ -427,6 +427,25 @@ module _
 
   module pre-invl = Equiv pre-invl
   module post-invl = Equiv post-invl
+
+module _
+  {x y} {f g : Hom x y} 
+  (f-inv : is-invertible f)
+  (g-inv : is-invertible g)
+  where
+
+  private 
+    module f = is-invertible f-inv
+    module g = is-invertible g-inv
+
+  inv-path : f.inv ≡ g.inv → f ≡ g
+  inv-path p = 
+    invertible→epic f.op _ _ $ 
+    f ∘ f.inv ≡⟨ f.invl ⟩
+    id        ≡˘⟨ g.invl ⟩
+    g ∘ g.inv ≡˘⟨ ap (g ∘_) p ⟩
+    g ∘ f.inv  ∎ 
+
 ```
 
 If we have a commuting triangle of isomorphisms, then we

@@ -18,8 +18,8 @@ module Cat.Bi.Displayed.Instances.2FullSubBicategory
 ```
 # 2-full sub-bicategories
 
-A *2-full sub-bicategory* of a bicategory $\bB$ chooses 
-a subset of objects and 1-cells, but keeps all 2-cells.
+A *2-full sub-bicategory* of a displayed bicategory $\bB$ chooses 
+a subset of displayed objects and displayed 1-cells, but keeps all displayed 2-cells.
 
 ```agda
 open Prebicategory B

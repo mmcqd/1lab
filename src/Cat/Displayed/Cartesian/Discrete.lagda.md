@@ -98,6 +98,7 @@ Every hom set of a discrete fibration is a [[proposition]].
     Hom[]-is-prop : ∀ {x y x' y'} {f : B.Hom x y} → is-prop (Hom[ f ] x' y')
 ```
 
+
 Let $f', f'' : x' \to_{f} y'$ be a pair of morphisms in $\cE$. Both
 $(x', f')$ and $(x' , f'')$ are candidates for lifts of $y'$ along
 $f$, so contractibility of lifts ensures that $(x', f') = (x' , f'')$.
@@ -109,7 +110,16 @@ conclude that $f' = f''$.
       Σ-inj-set (fibre-set _) $
       is-contr→is-prop (cart-lift f y') (x' , f') (x' , f'')
 ```
+<!--
+```agda
+    instance
+      H-Level-Hom[] : ∀ {n} {x y x' y'} {f : B.Hom x y} → H-Level (Hom[ f ] x' y') (1 + n)
+      H-Level-Hom[] = basic-instance 1 Hom[]-is-prop
 
+      H-Level-Ob[] : ∀ {n} {x} → H-Level Ob[ x ] (2 + n)
+      H-Level-Ob[] = basic-instance 2 (fibre-set _)
+```
+-->
 We can improve the previous result by noticing that morphisms
 $f' : x' \to_{f} y'$ give rise to proofs that $f^*(y') = x'$.
 
@@ -315,6 +325,9 @@ a presheaf from a discrete fibration.
 
 <!--
 ```agda
+
+unquoteDecl H-Level-is-discrete-cartesian-fibration = declare-record-hlevel 1 H-Level-is-discrete-cartesian-fibration (quote is-discrete-cartesian-fibration)
+
 module _ {o ℓ} (B : Precategory o ℓ)  where
   private
     module B = Precategory B

@@ -35,24 +35,27 @@ module _ {o oh ℓh o' oh' ℓh'} {B : Prebicategory o oh ℓh} (E : Bidisplayed
   Locally-cartesian : Type _
   Locally-cartesian = ∀ {A B} {A' : Ob[ A ]} {B' : Ob[ B ]} → Cartesian-fibration (Hom[ A' , B' ])
 
-
-  record 1-cell-cartesian {A B A' B'} (f : A ↦ B) (f' : A' [ f ]↦ B') : Type (o ⊔ o' ⊔ oh ⊔ oh' ⊔ ℓh ⊔ ℓh') where
+  record 1-cell-pre-cartesian {A B A' B'} (f : A ↦ B) (f' : A' [ f ]↦ B') : Type (o ⊔ o' ⊔ oh ⊔ oh' ⊔ ℓh ⊔ ℓh') where
     no-eta-equality
     field 
       universal¹ : ∀ {U U'} (m : U ↦ A) (h' : U' [ f ⊗ m ]↦ B') → U' [ m ]↦ A'
       commutes¹ : ∀ {U U'} (m : U ↦ A) (h' : U' [ f ⊗ m ]↦ B') 
                   → (f' ⊗' universal¹ m h') Hom[].≅↓ h'
-
+      universal² : ∀ {U U'} {m₁ m₂ : U ↦ A} 
+              → (δ : m₁ ⇒ m₂) 
+              → {h₁' : U' [ f ⊗ m₁ ]↦ B'} {h₂' : U' [ f ⊗ m₂ ]↦ B'}
+            → (σ : h₁' [ f ▶ δ ]⇒ h₂')
+              → universal¹ m₁ h₁' [ δ ]⇒ universal¹ m₂ h₂' 
+      
     module comm¹ {U U'} {m : U ↦ A} {h' : U' [ f ⊗ m ]↦ B'} = Hom[]._≅[_]_ (commutes¹ m h')
     
+  record 1-cell-cartesian {A B A' B'} (f : A ↦ B) (f' : A' [ f ]↦ B') : Type (o ⊔ o' ⊔ oh ⊔ oh' ⊔ ℓh ⊔ ℓh') where
+    no-eta-equality
+    field 
+      pre-cartesian : 1-cell-pre-cartesian f f'
 
+    open 1-cell-pre-cartesian pre-cartesian public
     field
-      universal² : ∀ {U U'} {m₁ m₂ : U ↦ A} 
-                 → (δ : m₁ ⇒ m₂) 
-                 → {h₁' : U' [ f ⊗ m₁ ]↦ B'} {h₂' : U' [ f ⊗ m₂ ]↦ B'}
-                → (σ : h₁' [ f ▶ δ ]⇒ h₂')
-                 → universal¹ m₁ h₁' [ δ ]⇒ universal¹ m₂ h₂' 
-      
       commutes² : ∀ {U U'} {m₁ m₂ : U ↦ A} {h₁' : U' [ f ⊗ m₁ ]↦ B'} {h₂' : U' [ f ⊗ m₂ ]↦ B'}
                 → (δ : m₁ ⇒ m₂) (σ : h₁' [ f ▶ δ ]⇒ h₂')
                 → (f' ▶' universal² δ σ) Hom[].≡[ sym (Hom.idl _ ∙ Hom.idr _) ] (comm¹.from' ∘' σ ∘' comm¹.to')
@@ -65,6 +68,14 @@ module _ {o oh ℓh o' oh' ℓh'} {B : Prebicategory o oh ℓh} (E : Bidisplayed
                 → (f' ▶' δ') Hom[].≡[ sym (Hom.idl _ ∙ Hom.idr _) ] (comm¹.from' ∘' σ ∘' comm¹.to')
                 → δ' ≡ universal² δ σ
       
+  record 1-cell-pre-cartesian-lift {A B} (f : A ↦ B) (B' : Ob[ B ]) : Type (o ⊔ o' ⊔ oh ⊔ oh' ⊔ ℓh ⊔ ℓh') where
+    field
+      {A'} : Ob[ A ]
+      lifting : A' [ f ]↦ B'
+      pre-cartesian : 1-cell-pre-cartesian f lifting
+
+    open 1-cell-pre-cartesian pre-cartesian public
+
   record 1-cell-cartesian-lift {A B} (f : A ↦ B) (B' : Ob[ B ]) : Type (o ⊔ o' ⊔ oh ⊔ oh' ⊔ ℓh ⊔ ℓh') where
     field
       {A'} : Ob[ A ]

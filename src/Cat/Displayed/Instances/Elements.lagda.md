@@ -21,6 +21,7 @@ open Functor
 
 private
   module P = Functor P
+  module Bop = Precategory (B ^op)
 ```
 -->
 

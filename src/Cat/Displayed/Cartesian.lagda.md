@@ -650,7 +650,8 @@ This is essentially the inverse of cartesian-domain-unique.
 
 ```agda
 
-domain-iso→cartesian
+
+cartesian-iso-stable
   : ∀ {x y z x' y' z'} {f : Hom x z} {g : Hom y z}
   → {f' : Hom[ f ] x' z'} {g' : Hom[ g ] y' z'}
   → {i : y ≅ x}
@@ -659,7 +660,7 @@ domain-iso→cartesian
   → f' ∘' i' .to' ≡[ p ] g'
   → is-cartesian f f'
   → is-cartesian g g'
-domain-iso→cartesian {f = f} {g = g} {f' = f'} {g' = g'} {i = i} {p = p} i' p' f-cart = g-cart where
+cartesian-iso-stable {f = f} {g = g} {f' = f'} {g' = g'} {i = i} {p = p} i' p' f-cart = g-cart where
 
   open is-cartesian f-cart
 

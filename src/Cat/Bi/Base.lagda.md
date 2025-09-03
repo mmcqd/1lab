@@ -2,6 +2,7 @@
 ```agda
 open import Cat.Functor.Naturality
 open import Cat.Instances.Product
+open import Cat.Functor.Constant
 open import Cat.Functor.Compose renaming (_◆_ to _◇_)
 open import Cat.Functor.Base
 open import Cat.Prelude
@@ -250,6 +251,21 @@ abbreviations here too:
            ((β ◆ (γ ◆ δ)) ∘ α→ _ _ _)
   α→nat {A} {B} {C} {D} {f} {f'} {g} {g'} {h} {h'} β γ δ =
     associator.to .is-natural (f , g , h) (f' , g' , h') (β , γ , δ)
+
+  λ≅ : ∀ {A B} (f : A ↦ B) → Cr._≅_ (Hom _ _) f (id ⊗ f)
+  λ≅ = isoⁿ→iso unitor-l
+
+  ρ≅ : ∀ {A B} (f : A ↦ B) → Cr._≅_ (Hom _ _) f (f ⊗ id)
+  ρ≅ = isoⁿ→iso unitor-r 
+
+  α≅ : ∀ {A B C D} (f : C ↦ D) (g : B ↦ C) (h : A ↦ B)
+     → Cr._≅_ (Hom _ _) ((f ⊗ g) ⊗ h) (f ⊗ (g ⊗ h))
+  α≅ f g h = isoⁿ→iso associator (f , g , h)
+
+  module λ≅ {A B} (f : A ↦ B) = Cr._≅_ (Hom _ _) (λ≅ f)
+  module ρ≅ {A B} (f : A ↦ B) = Cr._≅_ (Hom _ _) (ρ≅ f)
+  module α≅ {A B C D} (f : C ↦ D) (g : B ↦ C) (h : A ↦ B) = Cr._≅_ (Hom _ _) (α≅ f g h)
+
 ```
 
 The final data we need are coherences relating the left and right
@@ -441,12 +457,14 @@ have components $F_1(f)F_1(g) \To F_1(fg)$ and $\id \To F_1(\id)$.
       : ∀ {A B C}
       → C.compose F∘ (P₁ {B} {C} F× P₁ {A} {B}) => P₁ F∘ B.compose
 
-    unitor : ∀ {A} → C.id C.⇒ P₁ .Functor.F₀ (B.id {A = A})
+    -- unitor : ∀ {A} → C.id C.⇒ P₁ .Functor.F₀ (B.id {A = A})
+    unitor : ∀ {A} → Id => P₁ {A} {A} F∘ Const B.id
 ```
 
 <!--
 ```agda
   module P₁ {A} {B} = Functor (P₁ {A} {B})
+  open P₁ public using () renaming (F-id to ₂-id ; F-∘ to ₂-∘)
 
   ₀ : B.Ob → C.Ob
   ₀ = P₀
@@ -460,6 +478,17 @@ have components $F_1(f)F_1(g) \To F_1(fg)$ and $\id \To F_1(\id)$.
   γ→ : ∀ {a b c} (f : b B.↦ c) (g : a B.↦ b)
      → ₁ f C.⊗ ₁ g C.⇒ ₁ (f B.⊗ g)
   γ→ f g = compositor .η (f , g)
+
+  γ→nat : ∀ {a b c} {f₁ f₂ : b B.↦ c} {g₁ g₂ : a B.↦ b} (α : f₁ B.⇒ f₂) (β : g₁ B.⇒ g₂)
+        → γ→ f₂ g₂ C.∘ (₂ α C.◆ ₂ β) ≡ (₂ (α B.◆ β) C.∘ γ→ f₁ g₁)
+  γ→nat α β = compositor .is-natural _ _ (α , β)
+
+  υ→ : ∀ {a} → C.id C.⇒ ₁ B.id 
+  υ→ {a} = unitor {A = a} .η _
+
+  υ→nat : ∀ {a} {f : C.id {₀ a} C.⇒ C.id}
+        → υ→ C.∘ f ≡ Functor.F₁ P₁ B.Hom.id C.∘ υ→
+  υ→nat = unitor .is-natural _ _ _
 ```
 -->
 
@@ -495,11 +524,11 @@ squares).
 
     right-unit
       : ∀ {a b} (f : a B.↦ b)
-      → ₂ (B.ρ← f) C.∘ γ→ f B.id C.∘ (₁ f C.▶ unitor) ≡ C.ρ← (₁ f)
+      → ₂ (B.ρ← f) C.∘ γ→ f B.id C.∘ (₁ f C.▶ υ→) ≡ C.ρ← (₁ f)
 
     left-unit
       : ∀ {a b} (f : a B.↦ b)
-      → ₂ (B.λ← f) C.∘ γ→ B.id f C.∘ (unitor C.◀ ₁ f) ≡ C.λ← (₁ f)
+      → ₂ (B.λ← f) C.∘ γ→ B.id f C.∘ (υ→ C.◀ ₁ f) ≡ C.λ← (₁ f)
 ```
 
 ## Pseudofunctors {defines="pseudofunctor"}
@@ -526,10 +555,13 @@ record
 
   field
     unitor-inv
-      : ∀ {a} → Cr.is-invertible (C.Hom _ _) (unitor {a})
+      : ∀ {a} → Cr.is-invertible (C.Hom _ _) (υ→ {a})
     compositor-inv
       : ∀ {a b c} (f : b B.↦ c) (g : a B.↦ b) → Cr.is-invertible (C.Hom _ _) (γ→ f g)
 
+  module unitor {a} = Cr._≅_ _ (Cr.invertible→iso _ (υ→ {a}) unitor-inv)
+  module compositor {a b c} {f : b B.↦ c} {g : a B.↦ b} = Cr._≅_ _ (Cr.invertible→iso _ (γ→ f g) (compositor-inv f g)) 
+  
   γ← : ∀ {a b c} (f : b B.↦ c) (g : a B.↦ b)
     → ₁ (f B.⊗ g) C.⇒ ₁ f C.⊗ ₁ g
   γ← f g = compositor-inv f g .Cr.is-invertible.inv
@@ -612,8 +644,8 @@ boil down to commutativity of the nightmarish diagrams in [@basicbicats,
 
       ν-unitor
         : ∀ {a}
-        → ν→ (B.id {a}) C.∘ (G.unitor C.◀ σ a)
-        ≡ (σ a C.▶ F.unitor) C.∘ C.ρ→ (σ a) C.∘ C.λ← (σ a)
+        → ν→ (B.id {a}) C.∘ (G.υ→ C.◀ σ a)
+        ≡ (σ a C.▶ F.υ→) C.∘ C.ρ→ (σ a) C.∘ C.λ← (σ a)
 ```
 
 A lax transformation with invertible naturator is called a
