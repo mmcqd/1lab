@@ -168,6 +168,13 @@ introducing them in the first place.
                → g' ≡[ q ] h' → f' ≡[ p ] g' → f' ≡[ p ∙ q ] h'
   ≡[]⟨⟩-syntax f' q' p' = p' ∙[] q'
 
+  ≡[]⟨⟩∙∙[]⟨⟩-syntax 
+    : ∀ {a b x y} {f g h i : Hom a b} {p : f ≡ g} {q : g ≡ h} {r : h ≡ i}
+    → (f' : Hom[ f ] x y) (g' : Hom[ g ] x y) {h' : Hom[ h ] x y} {i' : Hom[ i ] x y}
+    → f' ≡[ p ] g' → g' ≡[ q ] h' → h' ≡[ r ] i' 
+    → f' ≡[ p ∙∙ q ∙∙ r ] i'
+  ≡[]⟨⟩∙∙[]⟨⟩-syntax f' g' p' q' r' = p' ∙∙[] q' ∙∙[] r'
+
   ≡[-]⟨⟩-syntax : ∀ {a b x y} {f g h : Hom a b} (p : f ≡ g) {q : g ≡ h}
                → (f' : Hom[ f ] x y) {g' : Hom[ g ] x y} {h' : Hom[ h ] x y}
                → g' ≡[ q ] h' → f' ≡[ p ] g' → f' ≡[ p ∙ q ] h'
@@ -181,9 +188,10 @@ introducing them in the first place.
   syntax ∙[-]-syntax p p' q' = p' ∙[ p ] q'
   syntax ≡[]⟨⟩-syntax f' q' p' = f' ≡[]⟨ p' ⟩ q'
   syntax ≡[-]⟨⟩-syntax p f' q' p' = f' ≡[ p ]⟨ p' ⟩ q'
+  syntax ≡[]⟨⟩∙∙[]⟨⟩-syntax f' g' p' q' r' = f' ≡[]⟨ p' ⟩ g' ∙∙[]⟨ q' ⟩ r'
 
   infixr 30 _∙[]_ ∙[-]-syntax
-  infixr 2 ≡[]⟨⟩-syntax ≡[-]⟨⟩-syntax _≡[]˘⟨_⟩_
+  infixr 2 ≡[]⟨⟩-syntax ≡[-]⟨⟩-syntax _≡[]˘⟨_⟩_ ≡[]⟨⟩∙∙[]⟨⟩-syntax
 
 record Trivially-graded {o ℓ} (B : Precategory o ℓ) (o' ℓ' : Level) : Type (o ⊔ ℓ ⊔ lsuc o' ⊔ lsuc ℓ') where
   open Precategory B

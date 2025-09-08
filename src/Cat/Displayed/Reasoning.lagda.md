@@ -730,4 +730,5 @@ abstract
     → h' ∘' f' ≡[ q ] id'
     → g' ∘' f' ≡[ rswizzle p q ] i'
   rswizzle[] {f' = f'} p q p' q' = rswizzle' p q p' q'
+
 ```

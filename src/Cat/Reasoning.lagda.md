@@ -432,7 +432,7 @@ module _
   {x y} {f g : Hom x y} 
   (f-inv : is-invertible f)
   (g-inv : is-invertible g)
-  where
+  where abstract
 
   private 
     module f = is-invertible f-inv

@@ -397,6 +397,11 @@ record is-invertible[_]
 
   open Inverses[_] inverses' public
 
+  op' : is-invertible[ is-invertible.op f-inv ] inv'
+  op' .inv' = f'
+  op' .inverses' .Inverses[_].invl' = invr'
+  op' .inverses' .Inverses[_].invr' = invl'
+
 record _≅[_]_
   {a b} (a' : Ob[ a ]) (i : a ≅ b) (b' : Ob[ b ])
   : Type ℓ'
@@ -551,6 +556,44 @@ instance
     → Extensional (x' ≅[ f ] y') ℓr
   Extensional-≅[] ⦃ sa ⦄ = injection→extensional! ≅[]-path sa
 
+
+Inverses[]-∘ 
+  : ∀ {a b c a' b' c'} {f : Hom b c} {fop : Hom c b} {g : Hom a b} {gop : Hom b a}
+  → {f-inv : Inverses f fop} {g-inv : Inverses g gop }
+  → {f' : Hom[ f ] b' c'} {f'op : Hom[ fop ] c' b'} {g' : Hom[ g ] a' b'} {g'op : Hom[ gop ] b' a'}
+  → Inverses[ f-inv ] f' f'op
+  → Inverses[ g-inv ] g' g'op 
+  → Inverses[ Inverses-∘ f-inv g-inv ] (f' ∘' g') (g'op ∘' f'op)
+Inverses[]-∘ 
+  {f = f } {fop = fop} {g = g} {gop = gop} 
+  {f' = f'} {f'op = f'op} {g' = g'} {g'op = g'op}
+  f-inv' g-inv' = record { 
+    invl' = cast[] $ pulll[] _ (cancelr[] _ g'.invl') ∙[] f'.invl' ; 
+    invr' = cast[] $ pulll[] _ (cancelr[] _ f'.invr') ∙[] g'.invr' 
+  }
+  where
+    module f' = Inverses[_] f-inv'
+    module g' = Inverses[_] g-inv'
+
+_∘Iso[]_ 
+  : ∀ {a b c a' b' c'} 
+  → {i : b ≅ c} {j : a ≅ b}
+  → b' ≅[ i ] c'
+  → a' ≅[ j ] b'
+  → a' ≅[ i ∘Iso j ] c'
+(i' ∘Iso[] j') .to' = i' .to' ∘' j' .to'
+(i' ∘Iso[] j') .from' = j' .from' ∘' i' .from'
+(i' ∘Iso[] j') .inverses' = Inverses[]-∘ (i' .inverses') (j' .inverses')
+
+_∙Iso[]_
+  : ∀ {a b c a' b' c'} 
+  → {j : a ≅ b} {i : b ≅ c} 
+  → a' ≅[ j ] b'
+  → b' ≅[ i ] c'
+  → a' ≅[ j ∙Iso i ] c'
+j' ∙Iso[] i' = i' ∘Iso[] j'
+
+
 _Iso[]⁻¹
   : ∀ {a b a' b'} {i : a ≅ b}
   → a' ≅[ i ] b'
@@ -630,7 +673,11 @@ module _
 
   invertible[]→monic[] : is-monic[ invertible→monic f-inv ] f'
   invertible[]→monic[] g' h' p p' =
-    cast[] $ introl[] _ f'.invr' ∙[] extendr[] _ p' ∙[] eliml[] _ f'.invr'
+    cast[] $ introl[] _ f'.invr' ∙∙[] extendr[] _ p' ∙∙[] eliml[] _ f'.invr'
+
+  invertible[]→epic[] : is-epic[ invertible→epic f-inv ] f'
+  invertible[]→epic[] g' h' p p' =
+    cast[] $ ((intror[] _ f'.invl') ∙∙[] extendl[] _ p' ∙∙[] elimr[] _ f'.invl')
 
 
 iso[]→to-has-section[]
@@ -713,5 +760,26 @@ module _
     → f'.section' ∘' h₁' ≡[ p ] h₂'
     → h₁' ≡[ post-section f-section p ] f' ∘' h₂'
   post-section[] = post-section'
+
+
+module _
+  {x y x' y'} {f g : Hom x y} {f' : Hom[ f ] x' y'} {g' : Hom[ g ] x' y'}
+  {f-inv : is-invertible f} {g-inv : is-invertible g}
+  (f-inv' : is-invertible[ f-inv ] f') (g-inv' : is-invertible[ g-inv ] g')
+  where abstract
+
+  private 
+    module f = is-invertible f-inv
+    module g = is-invertible g-inv
+    module f' = is-invertible[_] f-inv'
+    module g' = is-invertible[_] g-inv'
+
+  inv-path[] : {p : f.inv ≡ g.inv} → f'.inv' ≡[ p ] g'.inv' → f' ≡[ inv-path f-inv g-inv p ] g'
+  inv-path[] p' = cast[] $
+    invertible[]→epic[] f'.op' _ _ _ $
+    f' ∘' f'.inv' ≡[]⟨ f'.invl' ⟩
+    id'           ≡[]˘⟨ g'.invl' ⟩
+    g' ∘' g'.inv' ≡[]˘⟨ apd (λ _ → g' ∘'_) p' ⟩
+    g' ∘' f'.inv'  ∎
 ```
 -->

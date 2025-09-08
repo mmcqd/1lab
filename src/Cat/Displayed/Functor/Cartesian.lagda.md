@@ -7,6 +7,7 @@ open import Cat.Prelude
 open import Cat.Instances.Functor
 open import Cat.Displayed.Base
 open import Cat.Displayed.Cartesian
+open import Cat.Displayed.Cartesian.Discrete
 open import Cat.Displayed.Functor
 open import Cat.Displayed.Functor.Naturality
 open import Cat.Displayed.Instances.DisplayedFunctor
@@ -110,4 +111,20 @@ In fact, Disp[]-cartesian is an equivalence.
             ) 
             (π*.commutesp (B.idr _) _)
             π*.cartesian
+```
+
+If $\cE$ is a discrete fibration, then $[\cD, \cE] \liesover [\cA, \cB]$ is also a discrete fibration.
+
+```agda 
+  module _ (E* : is-discrete-cartesian-fibration E) where
+    open is-discrete-cartesian-fibration E* 
+  
+    Disp[]-discrete : is-discrete-cartesian-fibration Disp[ D , E ]
+    Disp[]-discrete .is-discrete-cartesian-fibration.fibre-set f = Displayed-functor-is-set fibre-set
+    Disp[]-discrete .is-discrete-cartesian-fibration.cart-lift f y' .centre .fst = Disp^* (discrete→cartesian _ E*) f y'
+    Disp[]-discrete .is-discrete-cartesian-fibration.cart-lift f y' .centre .snd = NT' (λ {x} x' → π* (f .η x) (y' .F₀' x')) λ _ _ _ → prop!
+    Disp[]-discrete .is-discrete-cartesian-fibration.cart-lift f y' .paths (f^*y' , π*fy') = 
+      Σ-pathp
+        (Displayed-functor-pathp refl (λ {x} x' → ^*-lift _ (π*fy' .η' x')) (λ f' → prop!))
+        (Nat'-pathp _ _ _ _ _ λ x' → prop!)
 ```

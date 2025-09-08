@@ -310,6 +310,60 @@ $\bf{B}$, $\bf{C}$.
 
 <!--
 ```agda
+module Prebicategory-Hom-Reasoning (B : Prebicategory o ℓ ℓ') where
+  open Prebicategory B hiding (module Hom) public
+  module Hom {A B} where
+    open Cr (Hom A B) public
+  
+module _ {o oh ℓh} (B : Prebicategory o oh ℓh) where
+  open Prebicategory-Hom-Reasoning B
+
+  ◆-invertible 
+    : ∀ {a b c} 
+    → {f g : b ↦ c} {h k : a ↦ b} 
+    → {α : f ⇒ g} {β : h ⇒ k} 
+    → Hom.is-invertible α → Hom.is-invertible β → Hom.is-invertible (α ◆ β) 
+  ◆-invertible α-inv β-inv = 
+    Hom.make-invertible 
+      ((α-inv.inv) ◆ (β-inv.inv)) 
+      ((sym $ compose.F-∘ _ _) ∙∙ (ap₂ (λ x y → x ◆ y) α-inv.invl β-inv.invl) ∙∙ compose.F-id) 
+      ((sym $ compose.F-∘ _ _) ∙∙ (ap₂ (λ x y → x ◆ y) α-inv.invr β-inv.invr) ∙∙ compose.F-id) 
+    where
+      module α-inv = Hom.is-invertible α-inv
+      module β-inv = Hom.is-invertible β-inv 
+  
+  ▶-invertible 
+    : ∀ {a b c} 
+    → {f g : a ↦ b} 
+    → {α : f ⇒ g} 
+    → (h : b ↦ c) → Hom.is-invertible α → Hom.is-invertible (h ▶ α)
+  ▶-invertible h α-inv = ◆-invertible Hom.id-invertible α-inv
+
+  ◀-invertible
+    : ∀ {a b c}
+    → {f g : b ↦ c}
+    → {β : f ⇒ g}
+    → (h : a ↦ b) → Hom.is-invertible β → Hom.is-invertible (β ◀ h)
+  ◀-invertible h β-inv = ◆-invertible β-inv Hom.id-invertible
+
+  ◆-iso  
+    : ∀ {a b c} 
+    → {f g : b ↦ c} {h k : a ↦ b} 
+    → f Hom.≅ g → h Hom.≅ k → (f ⊗ h) Hom.≅ (g ⊗ k)
+  ◆-iso i j = Hom.invertible→iso (i .Hom.to ◆ j .Hom.to) (◆-invertible (Hom.iso→invertible i) (Hom.iso→invertible j))
+
+  ▶-iso 
+    : ∀ {a b c} 
+    → {f g : a ↦ b} 
+    → (h : b ↦ c) → f Hom.≅ g → (h ⊗ f) Hom.≅ (h ⊗ g)
+  ▶-iso h i = Hom.invertible→iso (h ▶ (i .Hom.to)) (▶-invertible h (Hom.iso→invertible i))
+
+  ◀-iso
+    : ∀ {a b c} 
+    → {f g : b ↦ c} 
+    → (h : a ↦ b) → f Hom.≅ g → (f ⊗ h) Hom.≅ (g ⊗ h)
+  ◀-iso h i = Hom.invertible→iso ((i .Hom.to) ◀ h) (◀-invertible h (Hom.iso→invertible i))
+
 module _ (B : Prebicategory o ℓ ℓ') where
   open Prebicategory B
   open Functor
@@ -457,8 +511,8 @@ have components $F_1(f)F_1(g) \To F_1(fg)$ and $\id \To F_1(\id)$.
       : ∀ {A B C}
       → C.compose F∘ (P₁ {B} {C} F× P₁ {A} {B}) => P₁ F∘ B.compose
 
-    -- unitor : ∀ {A} → C.id C.⇒ P₁ .Functor.F₀ (B.id {A = A})
-    unitor : ∀ {A} → Id => P₁ {A} {A} F∘ Const B.id
+    unitor : ∀ {A} → C.id C.⇒ P₁ .Functor.F₀ (B.id {A = A})
+    -- unitor : ∀ {A} → Id => P₁ {A} {A} F∘ Const B.id
 ```
 
 <!--
@@ -484,11 +538,11 @@ have components $F_1(f)F_1(g) \To F_1(fg)$ and $\id \To F_1(\id)$.
   γ→nat α β = compositor .is-natural _ _ (α , β)
 
   υ→ : ∀ {a} → C.id C.⇒ ₁ B.id 
-  υ→ {a} = unitor {A = a} .η _
+  υ→ {a} = unitor {A = a}
 
-  υ→nat : ∀ {a} {f : C.id {₀ a} C.⇒ C.id}
-        → υ→ C.∘ f ≡ Functor.F₁ P₁ B.Hom.id C.∘ υ→
-  υ→nat = unitor .is-natural _ _ _
+  -- υ→nat : ∀ {a} {f : C.id {₀ a} C.⇒ C.id}
+  --       → υ→ C.∘ f ≡ Functor.F₁ P₁ B.Hom.id C.∘ υ→
+  -- υ→nat = unitor .is-natural _ _ _
 ```
 -->
 

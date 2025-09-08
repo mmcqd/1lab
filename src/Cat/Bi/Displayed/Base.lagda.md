@@ -11,7 +11,8 @@ open import Cat.Displayed.Base
 open import Cat.Bi.Base
 open import Cat.Prelude
 
-import Cat.Displayed.Reasoning as DR
+import Cat.Displayed.Reasoning as Dr
+import Cat.Displayed.Morphism as Dm
 ```
 -->
 ```agda
@@ -47,11 +48,11 @@ module _ where
   compose-assocˡ' {H' = H'} F' {A' = A'} {D' = D'} .F-id' = 
     cast[] (apd (λ _ → F' .F₁') (F' .F-id' ,ₚ refl) ∙[] (F' .F-id')) 
     where 
-      open DR (H' A' D')
+      open Dr (H' A' D')
   compose-assocˡ' {H' = H'} F' {A' = A'} {D' = D'} .F-∘' = 
     cast[] (apd (λ _ → F' .F₁') (F' .F-∘' ,ₚ refl) ∙[] F' .F-∘')
     where 
-      open DR (H' A' D')
+      open Dr (H' A' D')
 
   compose-assocʳ' : ∀ {o o' d d' ℓ ℓ'} {O : Type o} {H : O → O → Precategory ℓ ℓ'}
                    → {O' : O → Type o'} {H' : ∀ {a b} → O' a → O' b → Displayed (H a b) d d'}
@@ -66,11 +67,11 @@ module _ where
   compose-assocʳ' {H' = H'} F' {A' = A'} {D' = D'} .F-id' =
     cast[] (apd (λ _ → F' .F₁') (refl ,ₚ F' .F-id') ∙[] F' .F-id')
     where
-      open DR (H' A' D')
+      open Dr (H' A' D')
   compose-assocʳ' {H' = H'} F' {A' = A'} {D' = D'} .F-∘' =
     cast[] (apd (λ _ → F' .F₁') (refl ,ₚ F' .F-∘') ∙[] F' .F-∘')
     where
-      open DR (H' A' D')
+      open Dr (H' A' D')
 ```
 -->
 
@@ -301,6 +302,39 @@ As do the triangle and pentagon identities.
           (α←' (f' ⊗' g') h' i' ∘' α←' f' g' (h' ⊗' i'))
 ```
 
+```agda
+
+module Bidisplayed-Hom[]-Reasoning {o oh ℓh o' oh' ℓh'} {B : Prebicategory o oh ℓh} (E : Bidisplayed B o' oh' ℓh') where
+  open Bidisplayed E hiding (module Hom[]) public
+  module Hom[] {A B} {A' : Ob[ A ]} {B' : Ob[ B ]} where
+    open Dm (Hom[ A' , B' ]) public
+    open Dr (Hom[ A' ,  B' ]) public
+
+module _ {o oh ℓh o' oh' ℓh'} {B : Prebicategory o oh ℓh} (E : Bidisplayed B o' oh' ℓh') where
+  open Prebicategory B
+  open Bidisplayed-Hom[]-Reasoning E
+  open Displayed-functor
+
+  postaction' : ∀ {a b c a' b' c'} {f : a ↦ b} (f' : a' [ f ]↦ b') → Displayed-functor (postaction B {c = c} f) Hom[ c' , a' ] Hom[ c' , b' ]
+  postaction' f' .F₀' g' = f' ⊗' g'
+  postaction' f' .F₁' g' = f' ▶' g'
+  postaction' f' .F-id' = compose'.F-id'
+  postaction' f' .F-∘' {f' = g'} {g' = h'} = 
+    Hom[].cast[] $ 
+    symP (apd (λ _ → _◆' (g' ∘' h')) (Hom[].idl' _)) Hom[].∙[] compose'.F-∘'
+
+  preaction' 
+    : ∀ {a b c a' b' c'}
+    → {f : a ↦ b}
+    → (f' : a' [ f ]↦ b')
+    → Displayed-functor (preaction B {c = c} f) Hom[ b' , c' ] Hom[ a' , c' ]
+  preaction' f' .F₀' g' = g' ⊗' f'
+  preaction' f' .F₁' g' = g' ◀' f'
+  preaction' f' .F-id' = compose'.F-id'
+  preaction' f' .F-∘' {f' = g'} {g' = h'} =
+    Hom[].cast[] $ symP (apd (λ _ → (g' ∘' h') ◆'_) (Hom[].idl' _)) Hom[].∙[] compose'.F-∘'
+```
+
 ## The displayed bicategory of displayed categories
 
 Displayed categories naturally assemble into a displayed biacategory over $\bf{Cat}$,
@@ -319,7 +353,7 @@ Displayed-cat o ℓ o' ℓ' .Hom[_,_] D E = Disp[ D , E ]
 Displayed-cat o ℓ o' ℓ' .↦id' = Id'
 Displayed-cat o ℓ o' ℓ' .compose' = F∘'-functor
 Displayed-cat o ℓ o' ℓ' .unitor-l' {B' = B'} = to-natural-iso' ni where
-  open DR B'
+  open Dr B'
   ni : make-natural-iso[ _ ] _ _
   ni .eta' x' = NT' (λ _ → id') λ _ _ _ → id-comm-sym[]
   ni .inv' x' = NT' (λ _ → id') λ _ _ _ → id-comm-sym[]
@@ -328,7 +362,7 @@ Displayed-cat o ℓ o' ℓ' .unitor-l' {B' = B'} = to-natural-iso' ni where
   ni .natural' x' y' f' = Nat'-path λ x'' → cast[] $ symP $ (idr' _ ∙[] id-comm[])
 
 Displayed-cat o ℓ o' ℓ' .unitor-r' {B' = B'} = to-natural-iso' ni where
-  open DR B'
+  open Dr B'
   ni : make-natural-iso[ _ ] _ _
   ni .eta' x' = NT' (λ _ → id') λ _ _ _ → id-comm-sym[]
   ni .inv' x' = NT' (λ _ → id') λ _ _ _ → id-comm-sym[]
@@ -337,7 +371,7 @@ Displayed-cat o ℓ o' ℓ' .unitor-r' {B' = B'} = to-natural-iso' ni where
   ni .natural' x' y' f' = Nat'-path λ x'' → cast[] $ (idl' _ ∙[] symP (idr' _ ∙[] ((y' .F-id' ⟩∘'⟨refl) ∙[] idl' _)))
   
 Displayed-cat o ℓ o' ℓ' .associator' {C' = C'} {D' = D'} = to-natural-iso' ni where
-  open DR D'
+  open Dr D'
   module C' = Displayed C'
   ni : make-natural-iso[ _ ] _ _ 
   ni .eta' x' = NT' (λ _ → id') λ _ _ _ → id-comm-sym[]
@@ -355,7 +389,7 @@ Displayed-cat o ℓ o' ℓ' .pentagon' {B' = B'} {C' = C'} {D' = D'} {E' = E'} f
   (f' .F₁' (g' .F₁' C'.id')) ∘' (f' .F₁' D'.id')                                ≡[]⟨ ((apd (λ _ → f' .F₁') (g' .F-id') ∙[] f' .F-id') ⟩∘'⟨ f' .F-id') ⟩
   id' ∘' id'                                                                    ∎
   where
-    open DR E'
+    open Dr E'
     module B' = Displayed B'
     module C' = Displayed C'
     module D' = Displayed D' 

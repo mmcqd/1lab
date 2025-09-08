@@ -5,7 +5,9 @@ description: |
 ---
 <!--
 ```agda
+open import Cat.Displayed.Univalence.Reasoning
 open import Cat.Displayed.Instances.Elements
+open import Cat.Displayed.Univalence
 open import Cat.Displayed.Cartesian
 open import Cat.Displayed.Functor
 open import Cat.Instances.Functor

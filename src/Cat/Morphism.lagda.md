@@ -498,6 +498,12 @@ record _≅_ (a b : Ob) : Type h where
 
   open Inverses inverses public
 
+  op : b ≅ a
+  op .to = from
+  op .from = to
+  op .inverses .invl = inverses .invr
+  op .inverses .invr = inverses .invl
+
 ```
 <!--
 ```agda

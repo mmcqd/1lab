@@ -23,26 +23,6 @@ module _ {o oh ℓh} (B : Prebicategory o oh ℓh) where
     open CMD (Hom A B) public
     open CR (Hom A B) public
 
-  ◆-invertible 
-    : ∀ {a b c} 
-    → {f g : b ↦ c} {h k : a ↦ b} 
-    → {α : f ⇒ g} {β : h ⇒ k} 
-    → Hom.is-invertible α → Hom.is-invertible β → Hom.is-invertible (α ◆ β) 
-  ◆-invertible α-inv β-inv = 
-    Hom.make-invertible 
-      ((α-inv.inv) ◆ (β-inv.inv)) 
-      ((sym $ compose.F-∘ _ _) ∙∙ (ap₂ (λ x y → x ◆ y) α-inv.invl β-inv.invl) ∙∙ compose.F-id) 
-      ((sym $ compose.F-∘ _ _) ∙∙ (ap₂ (λ x y → x ◆ y) α-inv.invr β-inv.invr) ∙∙ compose.F-id) 
-    where
-      module α-inv = Hom.is-invertible α-inv
-      module β-inv = Hom.is-invertible β-inv 
-  
-  ◆-iso  
-    : ∀ {a b c} 
-    → {f g : b ↦ c} {h k : a ↦ b} 
-    → f Hom.≅ g → h Hom.≅ k → (f ⊗ h) Hom.≅ (g ⊗ k)
-  ◆-iso i j = Hom.invertible→iso (i .Hom.to ◆ j .Hom.to) (◆-invertible (Hom.iso→invertible i) (Hom.iso→invertible j))
-
   _^Op : Prebicategory _ _ _
   _^Op .Prebicategory.Ob = Ob
   _^Op .Prebicategory.Hom A B = Hom B A
@@ -60,7 +40,7 @@ module _ {o oh ℓh} (B : Prebicategory o oh ℓh) where
 
   _^Op .Prebicategory.pentagon f g h i = 
     Hom.inv-path 
-      (Hom.iso→invertible $ ◆-iso Hom.id-iso (α≅ _ _ _) Hom.∘Iso α≅ _ _ _ Hom.∘Iso ◆-iso (α≅ _ _ _) Hom.id-iso)
+      (Hom.iso→invertible $ ◆-iso B Hom.id-iso (α≅ _ _ _) Hom.∘Iso α≅ _ _ _ Hom.∘Iso ◆-iso B (α≅ _ _ _) Hom.id-iso)
       (Hom.iso→invertible $ (α≅ _ _ _) Hom.∘Iso (α≅ _ _ _))
       ((sym $ Hom.assoc _ _ _) ∙ pentagon _ _ _ _)
 
@@ -82,13 +62,13 @@ module _ {o oh ℓh} (B : Prebicategory o oh ℓh) where
   _^Co .Prebicategory.associator = iso→isoⁿ (λ (f , g , h) → Hom.iso→co-iso (α≅ f g h Hom.Iso⁻¹)) λ (f , g , h) → α←nat f g h
   _^Co .Prebicategory.triangle f g = 
     Hom.inv-path 
-      (Hom.iso→invertible $ (α≅ _ _ _) Hom.∘Iso (◆-iso (ρ≅ _) Hom.id-iso))
-      (Hom.iso→invertible $ ◆-iso Hom.id-iso (λ≅ _))
+      (Hom.iso→invertible $ (α≅ _ _ _) Hom.∘Iso (◆-iso B (ρ≅ _) Hom.id-iso))
+      (Hom.iso→invertible $ ◆-iso B Hom.id-iso (λ≅ _))
       (triangle f g)
 
   _^Co .Prebicategory.pentagon f g h i = 
     Hom.inv-path 
-      (Hom.iso→invertible $ ◆-iso (α≅ _ _ _) Hom.id-iso Hom.∙Iso α≅ _ _ _ Hom.∙Iso ◆-iso Hom.id-iso (α≅ _ _ _))
+      (Hom.iso→invertible $ ◆-iso B (α≅ _ _ _) Hom.id-iso Hom.∙Iso α≅ _ _ _ Hom.∙Iso ◆-iso B Hom.id-iso (α≅ _ _ _))
       (Hom.iso→invertible $ (α≅ _ _ _) Hom.∘Iso (α≅ _ _ _)) 
       (pentagon f g h i)
 

@@ -1,6 +1,7 @@
 <!--
 ```agda
 open import Cat.Displayed.Cartesian.Discrete
+open import Cat.Displayed.Univalence.Reasoning
 open import Cat.Displayed.Instances.DisplayedFunctor
 open import Cat.Displayed.Functor.Naturality
 open import Cat.Displayed.Cartesian
@@ -216,16 +217,6 @@ module _
     : is-fibred-functor h'
     → is-fibred-functor Factor
   Factor-fibred fibred .F-cartesian cart = Change-of-base-cartesian _ _ (fibred .F-cartesian cart)
-
-  Factor-commutes : (Change-of-base-functor f E F∘' Factor) Disp[].≅↓ h'
-  Factor-commutes = to-natural-iso' ni where
-    ni : make-natural-iso[ _ ] _ _ 
-    ni .eta' _ = id'
-    ni .inv' _ = id'
-    ni .eta∘inv' _ = idl' _
-    ni .inv∘eta' _ = idl' _
-    ni .natural' x' y' f' = id-comm-sym[]
-
 
 ``` 
 

@@ -123,7 +123,7 @@ module
     → (q1 : ∀ {x y x' y'} {f : A.Hom x y} → (f' : ℰ.Hom[ f ] x' y')
             → PathP (λ i → ℱ.Hom[ p i .F₁ f ] (q0 x' i) (q0 y' i)) (F' .F₁' f') (G' .F₁' f'))
     → PathP (λ i → Displayed-functor (p i) ℰ ℱ) F' G'
-  Displayed-functor-pathp {F = F} {F' = F'} {G' = G'} p q0 q1 = dfn where
+  Displayed-functor-pathp {F = F} {F' = F'} {G' = G'} p q0 q1 = dfn module Displayed-functor-pathp where
     -- We need to define this directly to get nice definitional behavior on the projections
     dfn : PathP (λ i → Displayed-functor (p i) ℰ ℱ) F' G'
     dfn i .F₀' x' = q0 x' i

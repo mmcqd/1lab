@@ -13,6 +13,7 @@ open import Cat.Displayed.Instances.FullSubcategory
 open import Cat.Displayed.Instances.Pullback
 open import Cat.Displayed.Functor
 open import Cat.Displayed.Functor.Naturality
+open import Cat.Displayed.Univalence.Reasoning
 
 import Cat.Reasoning as CR
 import Cat.Displayed.Reasoning as DR
@@ -25,7 +26,6 @@ module _ o ℓ o' ℓ' where
   open Cartesian-bifibration
   open 1-cell-cartesian-lift
   open 1-cell-cartesian
-  open 1-cell-pre-cartesian
   open Functor
   open Displayed-functor
   open make-natural-iso[_]
@@ -36,38 +36,40 @@ module _ o ℓ o' ℓ' where
   open is-fibred-functor
 
   private
-    module Cat = Prebicategory (Cat o ℓ)
-    module Fib = Bidisplayed (Fib o ℓ o' ℓ')
-    module Disp = Bidisplayed (Displayed-cat o ℓ o' ℓ')
+    module Cat = Prebicategory-Hom-Reasoning (Cat o ℓ)
+    module Fib = Bidisplayed-Hom[]-Reasoning (Fib o ℓ o' ℓ')
+    module Disp = Bidisplayed-Hom[]-Reasoning (Displayed-cat o ℓ o' ℓ')
 
-
-  -- module _ {A B : Cat.Ob} (f : A Cat.↦ B) (E : Displayed B o' ℓ') where
-  --   private module E = DR E
-
-  --   Factor : ∀ {U} {U' : Displayed U o' ℓ'} (m : U Cat.↦ A) (h' : Displayed-functor (f Cat.⊗ m) U' E) → Displayed-functor m U' (Change-of-base f E)
-  --   Factor m h' .F₀' = h' .F₀'
-  --   Factor m h' .F₁' = h' .F₁'
-  --   Factor m h' .F-id' = E.cast[] $ h' .F-id' E.∙[] E.wrap _
-  --   Factor m h' .F-∘' = E.cast[] $ h' .F-∘' E.∙[] E.wrap _
-
-  --   Factor-fibred : ∀ {U U'} (m : U Cat.↦ A) (h' : Displayed-functor (f Cat.⊗ m) U' E) → is-fibred-functor h' → is-fibred-functor (Factor {U} {U'} m h')
-  --   Factor-fibred m h' fibred .F-cartesian cart = Change-of-base-cartesian _ _ (fibred .F-cartesian cart)
-
-  module _ {A B : Cat.Ob} (f : A Cat.↦ B) ((E , E*) : Fib.Ob[ B ]) where
+  module _ {A B : Cat.Ob} (f : A Cat.↦ B) (E : Fib.Ob[ B ]) where
     
     private
-      module E = DR E
+      module E = DR (E .fst)
       module B = Precategory B
 
-    Fib-1-cart : 1-cell-cartesian-lift (Fib o ℓ o' ℓ') f (E , E*)
-    Fib-1-cart .A' = Change-of-base f E , Change-of-base-fibration f E E*
-    Fib-1-cart .lifting = Change-of-base-functor f E , Change-of-base-functor-fibred _ _ E*
-    Fib-1-cart .cartesian .pre-cartesian .universal¹ m h' = Factor f E m (h' .fst) , Factor-fibred f E m (h' .fst) (h' .snd)
-    Fib-1-cart .cartesian .pre-cartesian .commutes¹ m h' = iso→restrict-iso _ _ $ Factor-commutes f E m (h' .fst)
-    Fib-1-cart .cartesian .pre-cartesian .universal² δ σ = NT' (λ x' → E.hom[ B.idr _ ] (σ .η' x')) λ x' y' f → 
-      E.cast[] $ (E.unwrap _) E.∙∙[] (E.unwrapl _) E.∙∙[] σ .is-natural' _ _ _ ∙∙[] E.wrapr _ ∙∙[] E.wrap _
-    Fib-1-cart .cartesian .commutes² δ σ =  Nat'-path λ x' → E.cast[] $ (E.unwrap _ E.⟩∘'⟨refl) E.∙[] (symP $ E.idl' _)
-    Fib-1-cart .cartesian .unique² σ δ' p = Nat'-path λ x' → E.from-pathp[]⁻ $ E.cast[] $ ((symP $ E.idr' _) E.∙∙[] (p ηₚ' x') ∙∙[] (E.idl' _ E.∙[] E.idr' _))
+    Fib-1-cart : 1-cell-cartesian-lift (Fib o ℓ o' ℓ') f E
+    Fib-1-cart .A' = Change-of-base f (E .fst) , Change-of-base-fibration f _ (E .snd)
+    Fib-1-cart .lifting = Change-of-base-functor f (E .fst) , Change-of-base-functor-fibred f _ (E .snd)
+    Fib-1-cart .cartesian .universal¹ h g' = Factor f (E .fst) _ (g' .fst) , Factor-fibred f (E .fst) _ (g' .fst) (g' .snd)
+    Fib-1-cart .cartesian .commutes¹ h g' = path→vertical-iso _ (Displayed-functor-pathp _ (λ _ → refl) (λ _ → refl) ,ₚ prop!)
+    Fib-1-cart .cartesian .universal² {U' = U'} {h₁' = h₁' , _} {h₂' = h₂' , _} {g₁' = g₁' , _} {g₂' = g₂' , _} i₁ i₂ σ' = 
+      NT' (λ x' → E.hom[ B.idl _ ∙∙ B.idr _ ∙∙ B.idr _ ] (γ' .η' x')) λ x' y' f → 
+        E.cast[] $
+          E.hom[] (E.hom[] (γ' .η' _) E.∘' h₁' .F₁' f) E.≡[]⟨ E.unwrap _ E.∙[] E.unwrapl _  ⟩
+          γ' .η' _ E.∘' h₁' .F₁' f                      ∙∙[]⟨ γ' .is-natural' _ _ _ ⟩
+          h₂' .F₁' f E.∘' γ' .η' _                     E.≡[]⟨ E.wrapr _ E.∙[] E.wrap _ ⟩
+          E.hom[] (h₂' .F₁' f E.∘' E.hom[] (γ' .η' _)) ∎
+      where
+        module i₁ = Fib.Hom[]._≅[_]_ {A' = U'} {B' = E} i₁
+        module i₂ = Fib.Hom[]._≅[_]_ {A' = U'} {B' = E} i₂
+        γ' = i₂.from' Disp.∘' σ' Disp.∘' i₁.to' 
+
+    Fib-1-cart .cartesian .commutes² {U' = U'} i₁ i₂ σ' = 
+      Nat'-path λ {x} x' → 
+        E.cast[] $ E.unwrapl _ E.∙[] E.idr' _
+
+    Fib-1-cart .cartesian .unique² other p = 
+      Nat'-path λ {x} x' → 
+        E.cast[] $ (symP $ E.idr' _) E.∙∙[] p ηₚ' x' ∙∙[] E.wrap _
 
   module _ 
     {A B} {A' : Fib.Ob[ A ]} {B' : Fib.Ob[ B ]}
