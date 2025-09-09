@@ -1,6 +1,7 @@
 ```agda
-open import Cat.Prelude
+open import Cat.Prelude hiding (pure ; _>>=_)
 open import Cat.Bi.Base
+open import Data.Dec
 
 module Cat.Bi.coherence {o oh ℓh} (B : Prebicategory o oh ℓh) where
 
@@ -33,41 +34,118 @@ instance
   Brackets-`↦ {a = a} {b = b} .⟦⟧-notation.Sem = a ↦ b
   Brackets-`↦ .⟦⟧-notation.⟦_⟧ = sem-↦
 
+
+-- pure 
+--   : ∀ {ℓa ℓb} {A : Type ℓa} {B : A → Type ℓb}
+--   → (a : A) ⦃ _ : B a ⦄ → Σ A B
+-- pure a ⦃ b ⦄ = (a , b)
+
+-- _>>=_
+--   : ∀ {ℓa ℓb ℓc} {A : Type ℓa} {B : A → Type ℓb} {C : Type ℓc}
+--   → (p : Σ A B) → ((a : A) ⦃ b : B a ⦄ → C) → C
+-- _>>=_ {B = B} (a , b) f = f a ⦃ b ⦄ 
+
+
+
 module 1-cell where
-  data Value : Ob → Ob → Type (o ⊔ oh) where
-    `id  : Value a a
-    _`∘_ : b ↦ c → Value a b → Value a c
+  Value : Ob → Ob → Type _
+  Value b c = ∀ {a} → a ↦ b → a ↦ c
 
-  eval : a `↦ b → Value a b
-  do-⊗ : Value b c → Value a b → Value a c
+  eval : (`f : a `↦ b) → Value a b
+  eval (` f) g = f ⊗ g
+  eval `id = {!   !}
+  eval (`f `⊗ `f₁) = {!   !}
+--   data Value : Ob → Ob → Type (o ⊔ oh) where
+--     `id  : Value a a
+--     _`⊗_ : b ↦ c → Value a b → Value a c
 
-  eval (` f) = f `∘ `id
-  eval `id = `id
-  eval (`f `⊗ `g) = do-⊗ (eval `f) (eval `g)
+--   variable
+--     vf vg vh vk : Value a b
 
-  do-⊗ `id vg = vg
-  do-⊗ (f `∘ vf) vg = f `∘ do-⊗ vf vg
+--   data Eval : a `↦ b → Value a b → Type (o ⊔ oh) 
+--   data Do-⊗ : Value b c → Value a b → Value a c → Type (o ⊔ oh) 
 
-  `quote : Value a b → a ↦ b
-  `quote `id = id
-  `quote (f `∘ vf) = f ⊗ `quote vf
+--   data Eval where
+--     instance
+--       val↓  : Eval (` f) (f `⊗ `id)
+--       `id↓  : Eval (`id {a}) `id
+--       `⊗↓ : ⦃ evf : Eval `f vf ⦄ ⦃ evg : Eval `g vg ⦄ ⦃ ev⊗ : Do-⊗ vf vg vh ⦄ → Eval (`f `⊗ `g) vh
 
-  quote-⊗ : (vf : Value b c) (vg : Value a b) → `quote (do-⊗ vf vg) Hom.≅ `quote vf ⊗ `quote vg
-  quote-⊗ `id vg = λ≅ _
-  quote-⊗ (f `∘ vf) vg = ▶-iso B f (quote-⊗ vf vg) Hom.∙Iso α≅.op _ _ _
+--   data Do-⊗ where
+--     instance
+--       `id↓  : Do-⊗ `id vg vg
+--       `⊗↓ : ⦃ ev⊗ : Do-⊗ vf vg vh ⦄ → Do-⊗ (f `⊗ vf) vg (f `⊗ vh) 
 
-  eval-sound : (`f : a `↦ b) → `quote (eval `f) Hom.≅ ⟦ `f ⟧
-  eval-sound (` f) = ρ≅.op f
-  eval-sound `id = Hom.id-iso
-  eval-sound (`f `⊗ `g) = 
-    `quote (do-⊗ (eval `f) (eval `g))   Hom.≅⟨ quote-⊗ (eval `f) (eval `g) ⟩ 
-    `quote (eval `f) ⊗ `quote (eval `g) Hom.≅⟨ ◆-iso B (eval-sound `f) (eval-sound `g) ⟩
-    ⟦ `f ⟧ ⊗ ⟦ `g ⟧ Hom.≅∎
-
-
-  
+--   data Reflect : Value a b → a ↦ b → Type (o ⊔ oh) where
+--     instance
+--       `id↑ : Reflect (`id {a}) id
+--       `⊗↑  : ⦃ rg : Reflect vg g ⦄ → Reflect (f `⊗ vg) (f ⊗ g)
 
 
+--   record Nf (`f : a `↦ b) (f : a ↦ b) : Type (o ⊔ oh) where
+--     instance constructor nf
+--     field
+--       {val}  : Value a b 
+--       ⦃ ev ⦄ : Eval `f val
+--       ⦃ rf ⦄ : Reflect val f
+
+
+
+--   do-⊗ : (vf : Value b c) (vg : Value a b) → Σ (Value a c) (Do-⊗ vf vg)
+--   do-⊗ `id vg = pure vg
+--   do-⊗ {c = c} {a = a} (f' `⊗ vf) vg = do
+--     vh ← do-⊗ vf vg
+--     pure (f' `⊗ vh)
+
+--   eval : (`f : a `↦ b) → Σ (Value a b) (Eval `f)
+--   eval (` f) = pure (f `⊗ `id)
+--   eval `id = pure `id
+--   eval (`f `⊗ `g) = do
+--     vf ← eval `f
+--     vg ← eval `g
+--     vh ← do-⊗ vf vg
+--     pure vh
+
+--   reflect : (vf : Value a b) → Σ (a ↦ b) (Reflect vf)
+--   reflect `id = pure id 
+--   reflect (f `⊗ vg) = do 
+--     g ← reflect vg 
+--     pure $ f ⊗ g
+
+--   nm : (`f : a `↦ b) → Σ (a ↦ b) (Nf `f)
+--   nm `f = do 
+--     vf ← eval `f
+--     f  ← reflect vf 
+--     pure f
+
+--   instance
+--     eval-any : Eval `f (eval `f .fst)
+--     eval-any {`f = `f} = eval `f .snd
+
+--     reflect-any : Reflect vf (reflect vf .fst)
+--     reflect-any {vf = vf} = reflect vf .snd
+
+--     do-⊗-any : Do-⊗ vf vg (do-⊗ vf vg .fst)
+--     do-⊗-any {vf = vf} {vg = vg} = do-⊗ vf vg .snd 
+
+--     nf-any : Nf `f (nm `f .fst)
+--     nf-any {`f = `f} = nm `f .snd
+
+--     {-# INCOHERENT reflect-any eval-any do-⊗-any  #-}
+
+--   reflect-unique : ⦃ _ : Reflect vf g ⦄ ⦃ _ : Reflect vf h ⦄ → g Hom.≅ h
+--   reflect-unique  ⦃ `id↑ ⦄ ⦃ `id↑ ⦄ = Hom.id-iso
+--   reflect-unique  ⦃ `⊗↑  ⦄ ⦃ `⊗↑  ⦄ = ▶-iso B _ reflect-unique
+
+--   do-⊗-reflect : ⦃ _ : Do-⊗ vf vg vh ⦄ ⦃ _ : Reflect vf f ⦄ ⦃ _ : Reflect vg g ⦄ ⦃ _ : Reflect vh h ⦄ → f ⊗ g Hom.≅ h
+--   do-⊗-reflect ⦃ `id↓ ⦄ ⦃ `id↑ ⦄ ⦃ rg ⦄ ⦃ rh  ⦄ = (λ≅.op _) Hom.∙Iso reflect-unique
+--   do-⊗-reflect ⦃ `⊗↓  ⦄ ⦃ `⊗↑  ⦄ ⦃ rg ⦄ ⦃ `⊗↑ ⦄ = α≅ _ _ _ Hom.∙Iso (▶-iso B _ $ do-⊗-reflect)
+
+--   nf-sound : {`f : a `↦ b} {f : a ↦ b} → Nf `f f → ⟦ `f ⟧ Hom.≅ f
+--   nf-sound (nf {val} ⦃ val↓ ⦄ ⦃ `⊗↑ ⦃ rg = `id↑ ⦄ ⦄) = ρ≅ _
+--   nf-sound (nf {val} ⦃ `id↓ ⦄ ⦃ `id↑ ⦄) = Hom.id-iso
+--   nf-sound (nf {val} ⦃ `⊗↓ {vf = vf} {vg = vg} ⦄ ⦃ rf  ⦄) = 
+--     ◆-iso B (nf-sound (nf {val = vf})) (nf-sound (nf {val = vg})) Hom.∙Iso do-⊗-reflect
 
 
 infixr 10 _`⇒_
@@ -116,117 +194,37 @@ instance
 -- Turn everything into (β ◆ ... ◆ γ) ∘ ... ∘ (φ ◆ ... ◆ ψ)
 -- Ok actually maybe we want (f ∘ ... ∘ g) ◆ ... ◆ (h ∘ ... ∘ k) 
 
+-- variable
+--   vf vg vh vk : 1-cell.Value a b
 
-infixr 20 _∘∷_
+-- infixr 20 _◆::_
+-- data HValue : (vf vg : 1-cell.Value a b) → Type (o ⊔ oh ⊔ ℓh) where
+--   `id   : HValue vf vf
+--   val   : ⦃ _ : 1-cell.Reflect vf f ⦄ ⦃ _ : 1-cell.Reflect vg g ⦄ → (f ⇒ g) → HValue vf vg
+--   _◆::_ 
+--     : ∀ {vf⊗h vg⊗k}
+--     → ⦃ _ : 1-cell.Reflect vf f ⦄ ⦃ _ : 1-cell.Reflect vg g ⦄ 
+--     → ⦃ _ : 1-cell.Do-⊗ vf vh vf⊗h ⦄ ⦃ _ : 1-cell.Do-⊗ vg vk vg⊗k ⦄
+--     → (f ⇒ g)
+--     → HValue vh vk 
+--     → HValue vf⊗h vg⊗k
 
--- data VValue : (`f `g : a `↦ b) → Type (o ⊔ oh ⊔ ℓh) where
---   `id : VValue `f `f
---   _∘∷_ : ⟦ `g ⟧ ⇒ ⟦ `h ⟧ → VValue `f `g → VValue `f `h 
+-- infixr 10 _∘::_
+-- data VValue : (vf vg : 1-cell.Value a b) → Type (o ⊔ oh ⊔ ℓh) where
+--   `id : VValue vf vf
+--   _∘::_ : HValue vg vh → VValue vf vg → VValue vf vh
 
--- infixr 10 _◆∷_
--- data HValue : (`f `g : a `↦ b) → Type (o ⊔ oh ⊔ ℓh) where
---   `id : HValue `f `f
---   _◆∷_ : VValue `f `g → HValue `h `k → HValue (`f `⊗ `h) (`g `⊗ `k)
-  -- α→◆∷_ : HValue ((`f₁ `⊗ `g₁) `⊗ `h₁) ((`f₂ `⊗ `g₂) `⊗ `h₂) → HValue (`f₁ `⊗ `g₁ `⊗ `h₁) (`f₂ `⊗ `g₂ `⊗ `h₂)
-  -- α←◆∷_ : HValue (`f₁ `⊗ `g₁ `⊗ `h₁) (`f₂ `⊗ `g₂ `⊗ `h₂) →  HValue ((`f₁ `⊗ `g₁) `⊗ `h₁) ((`f₂ `⊗ `g₂) `⊗ `h₂)
-
--- Need:
--- HValue ((`f `⊗ `h) `⊗ `h₁) ((`g `⊗ `k) `⊗ `k₁) -> HValue (`f `⊗ (`h `⊗ `h₁)) (`g `⊗ (`k `⊗ `k₁))
-
-
--- do-◀ : HValue `f `g → (`h : a `↦ b) → HValue (`f `⊗ `h) (`g `⊗ `h)
--- do-◀ `id `h = `id
--- do-◀ (β ◆∷ βs) `h = α←◆∷ (β ◆∷ do-◀ βs `h)
--- do-◀ (α→◆∷ βs) `h = {! do-◀ βs `h  !}
--- do-◀ (α←◆∷ βs) `h = {!   !} 
-
--- do-◆ : HValue `f `g → HValue `h `k → HValue (`f `⊗ `h) (`g `⊗ `k)
--- do-◆ `id γs = `id ◆∷ γs
--- do-◆ (β ◆∷ βs) γs = α←◆∷ (β ◆∷ do-◆ βs γs)
--- do-◆ (α→◆∷ βs) γs = {!  do-◆ βs γs !}
--- do-◆ (α←◆∷ βs) γs = {! do-◆ βs γs  !}
-
-
--- -- "Horizontal" value
-data HValue : (`f `g : a `↦ b) → Type (o ⊔ oh ⊔ ℓh) where
-  `id : HValue `f `f
-  `_ : ⟦ `f ⟧ ⇒ ⟦ `g ⟧ → HValue `f `g
-  _◆∷_ : ⟦ `f ⟧ ⇒ ⟦ `g ⟧ → HValue `h `k → HValue (`f `⊗ `h) (`g `⊗ `k)
-
-data Value : (`f `g : a `↦ b) → Type (o ⊔ oh ⊔ ℓh) where
-  `id : Value `f `f
-  _∘∷_ : HValue `g `h → Value `f `g → Value `f `h 
-
-foo : Value (` compose.F₀ (id ⊗ id , id)) (` compose.F₀ (id , id ⊗ id))
-foo = (` (α→ id id id)) ∘∷ `id
-
--- do-∘ : Value `g `h → Value `f `g → Value `f `h
--- do-∘ `id ys = ys
--- do-∘ (x ∘∷ xs) ys = x ∘∷ do-∘ xs ys
-
--- do-◆ : HValue `f `g → HValue `h `k → Value (`f `⊗ `h) (`g `⊗ `k)
--- do-◆ `id ys = (Hom.id ◆∷ ys) ∘∷ `id
--- do-◆ (` x) ys = (x ◆∷ ys) ∘∷ `id
--- do-◆ (x ◆∷ xs) ys = {! ? ∘∷ do-◆ xs ys  !}  
-
--- -- First we get things into these nice lists
--- eval : `f `⇒ `g → Value `f `g
--- eval (` β) = (` β) ∘∷ `id
--- eval `id = `id
--- eval (β `∘ γ) = do-∘ (eval β) (eval γ)
--- -- Functoriality of ◆
--- eval ((β `∘ γ) `◆ (δ `∘ σ)) = {!   !} -- eval ((β `◆ δ) `∘ (γ `◆ σ))
--- eval (β `◆ γ) = {!   !}
+-- eval : ⦃ _ : 1-cell.Eval `f vf ⦄ ⦃ _ : 1-cell.Eval `g vg ⦄ → `f `⇒ `g → VValue vf vg
+-- eval (` x) = val {! x  !} ∘:: {!   !}
+-- eval `id = {!   !}
+-- eval (β `∘ β₁) = {!   !}
+-- eval (β `◆ β₁) = {!   !}
 -- eval (`λ← `f) = {!   !}
 -- eval (`λ→ `f) = {!   !}
 -- eval (`ρ← `f) = {!   !}
 -- eval (`ρ→ `f) = {!   !}
 -- eval (`α→ `f `g `h) = {!   !}
--- eval (`α← `f `g `h) = {!   !} 
-
-
--- data _`⇒_ : (f g : a ↦ b) → Type (o ⊔ oh ⊔ ℓh) where
---   _`∘_ : g `⇒ h → f `⇒ g → f `⇒ h
---   _`▶_ : (f : a ↦ b) → g `⇒ h → (f ⊗ g) `⇒ (f ⊗ h)
---   _`◀_ : g `⇒ h → (f : a ↦ b) → (g ⊗ f) `⇒ (h ⊗ f) 
---   `λ← : (f : a ↦ b) → id ⊗ f `⇒ f
---   `λ→ : (f : a ↦ b) → f `⇒ id ⊗ f
---   `ρ← : (f : a ↦ b) → f ⊗ id `⇒ f
---   `ρ→ : (f : a ↦ b) → f `⇒ f ⊗ id
---   `α← : (f : c ↦ d) (g : b ↦ c) (h : a ↦ b)
---       → f ⊗ (g ⊗ h) `⇒ (f ⊗ g) ⊗ h 
---   `α→ : (f : c ↦ d) (g : b ↦ c) (h : a ↦ b)
---       → (f ⊗ g) ⊗ h `⇒ f ⊗ (g ⊗ h)
-
-  
-
--- data Value : (f g : a ↦ b) → Type (o ⊔ oh ⊔ ℓh) where
---   []   : Value f g
---   _∘∷_ : (g ⇒ h) → Value f g → Value f h
---   _
-
-  -- data _`⇒_ : (`f `g : a `↦ b) → Type (o ⊔ oh ⊔ ℓh) where
-  -- `_  : ⟦ `f ⟧ ⇒ ⟦ `g ⟧ → `f `⇒ `g
-  -- `id : `f `⇒ `f 
-  -- _`∘_ : `g `⇒ `h → `f `⇒ `g  → `f `⇒ `h
-  -- _`◆_ : `f `⇒ `g → `h `⇒ `k → (`f `⊗ `h) `⇒ (`g `⊗ `k)
-  -- `λ← : (`f : a `↦ b) → `id `⊗ `f `⇒ `f
-  -- `λ→ : (`f : a `↦ b) → `f `⇒ `id `⊗ `f
-  -- `ρ← : (`f : a `↦ b) → `f `⊗ `id `⇒ `f
-  -- `ρ→ : (`f : a `↦ b) → `f `⇒ `f `⊗ `id
-  -- `α→ : (`f : c `↦ d) (`g : b `↦ c) (`h : a `↦ b)
-  --     → (`f `⊗ `g) `⊗ `h `⇒ `f `⊗ (`g `⊗ `h)
-  -- `α← : (`f : c `↦ d) (`g : b `↦ c) (`h : a `↦ b)
-  --     → `f `⊗ (`g `⊗ `h) `⇒ (`f `⊗ `g) `⊗ `h
-
-  
-  -- data Value : (`f `g : a `↦ b) → Type (o ⊔ oh ⊔ ℓh) where
-  --   `id : Value `f `f
-  --   _`∘_ : 
-
-
-
- 
+-- eval (`α← `f `g `h) = {!   !}
 
 
 ```

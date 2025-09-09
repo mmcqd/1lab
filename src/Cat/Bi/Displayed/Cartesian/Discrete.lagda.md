@@ -35,7 +35,10 @@ open Prebicategory-Hom-Reasoning B
 open Bidisplayed-Hom[]-Reasoning E
 open Cbm E
 
-module 1-cell (E* : ∀ {A B} (A' : Ob[ A ]) (B' : Ob[ B ]) → is-discrete-cartesian-fibration Hom[ A' , B' ]) where
+is-locally-discrete : Type _
+is-locally-discrete = ∀ {A B} (A' : Ob[ A ]) (B' : Ob[ B ]) → is-discrete-cartesian-fibration Hom[ A' , B' ]
+
+module 1-cell (E* : is-locally-discrete) where
   private module _ {A B} {A' : Ob[ A ]} {B' : Ob[ B ]} where
     open is-discrete-cartesian-fibration (E* A' B') public
     open Dcr (E* A' B') public
@@ -126,10 +129,11 @@ module 1-cell (E* : ∀ {A B} (A' : Ob[ A ]) (B' : Ob[ B ]) → is-discrete-cart
 
     open is-discrete-cartesian cartesian public
 
+
 record is-discrete-cartesian-bifibration : Type (o ⊔ oh ⊔ ℓh ⊔ o' ⊔ oh' ⊔ ℓh') where
   no-eta-equality
   field 
-    2-cart : ∀ {A B} (A' : Ob[ A ]) (B' : Ob[ B ]) → is-discrete-cartesian-fibration Hom[ A' , B' ]
+    2-cart : is-locally-discrete
     1-cart : ∀ {A B} (f : A ↦ B) (B' : Ob[ B ]) → 1-cell.discrete-cartesian-lift 2-cart f B'
 
   module _ {A B} (f : A ↦ B) (B' : Ob[ B ]) where

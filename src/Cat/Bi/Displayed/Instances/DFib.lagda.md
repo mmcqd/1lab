@@ -8,6 +8,7 @@ open import Cat.Displayed.Total renaming (∫ to ∫' ; πᶠ to πᶠ')
 open import Cat.Bi.Base
 open import Cat.Bi.Displayed.Base
 open import Cat.Functor.Adjoint
+open import Cat.Bi.Displayed.Cartesian.Discrete.Fibre
 open import Cat.Bi.Displayed.Instances.FullSubBicategory 
 
 module Cat.Bi.Displayed.Instances.DFib where
@@ -22,8 +23,10 @@ is the full sub-bicategory of `Displayed-cat` which picks out the discrete fibra
 module _ o ℓ o' ℓ' where
   DFib : Bidisplayed (Cat o ℓ) _ _ _
   DFib = Birestrict (Displayed-cat o ℓ o' ℓ') is-discrete-cartesian-fibration
-
+```
   
+
+```agda 
 module _ {o' ℓ'} where
   private 
     module Cat o ℓ = Prebicategory (Cat o ℓ)

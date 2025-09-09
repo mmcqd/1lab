@@ -144,6 +144,14 @@ We can develop an analogue of our `hom[_]` calculus for displayed *objects*.
     syntax ob-cast[] p w = ob-cast[ w ] p
 
 
+    _∙[]ob_ 
+      : ∀ {a b c a' b' c'} 
+      → {f : B.Hom b a} {g : B.Hom c b}
+      → Hom[ f ] b' a'
+      → Hom[ g ] c' b'
+      → Hom[ f B.∘ g ] c' a' 
+    _∙[]ob_ = _∘'_
+
     _≡[]ob⟨_⟩_
       : ∀ {a b c b' c'} 
       → {f : B.Hom b a} {g : B.Hom c b}
